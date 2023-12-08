@@ -39,4 +39,4 @@ rocket.anim_rate = 1.0; % Visualize at 1.0x real−time
 rocket.vis(T, X, U);
 
 %% 
-
+%%%%

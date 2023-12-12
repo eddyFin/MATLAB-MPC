@@ -7,6 +7,7 @@ clc
 %% TODO: This file should produce all the plots for the deliverable
 
 %% Simulate the system:
+%git test
 
 Ts = 1/20;
 rocket = Rocket(Ts);

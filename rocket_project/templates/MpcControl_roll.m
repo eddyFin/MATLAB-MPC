@@ -1,5 +1,5 @@
 classdef MpcControl_roll < MpcControlBase
-    %try
+    
     methods
         % Design a YALMIP optimizer object that takes a steady-state state
         % and input (xs, us) and returns a control input

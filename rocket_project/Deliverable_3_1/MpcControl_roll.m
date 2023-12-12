@@ -35,7 +35,42 @@ classdef MpcControl_roll < MpcControlBase
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
+            % state constraints
+            %none 
+
+            % input constraints
+            %none
             
+            % matrices
+            Q = 50*eye(2);
+
+            R = 0.1;
+            sys = LTISystem('A',mpc.A,'B',mpc.B);
+
+            sys.x.max = [Inf;Inf];
+            sys.x.min = [-Inf;-Inf];
+            sys.u.min = [-Inf];
+            sys.u.max = [Inf];
+            sys.x.penalty = QuadFunction(Q);
+            sys.u.penalty = QuadFunction(R);
+
+            Qf = sys.LQRPenalty.weight;
+            Xf = sys.LQRSet;
+            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
+            
+            Ff = double(Xf.A);
+            ff = double(Xf.b);
+
+            obj = 0;
+            con = [];
+
+            for i = 1:N-1
+                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)]; % System dynamics
+             
+                obj = obj + X(:,i)'*Q*X(:,i) + U(:,i)'*R*U(:,i); % Cost function
+            end
+            con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
+            obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

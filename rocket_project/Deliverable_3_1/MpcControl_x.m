@@ -33,18 +33,22 @@ classdef MpcControl_x < MpcControlBase
             %       the DISCRETE-TIME MODEL of your system
             
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
+            % state constraints
             F = [0 1 0 0; 0 -1 0 0];
             f = [0.1745; 0.1745]; %rad
+
+            % input constraints
             M = [1; -1];
             m = [0.26; 0.26];
-
-            Q = 0.0001*eye(4)
+            
+            % matrices
+            Q = 0.0001*eye(4);
 
             R = 1;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;0.1745;Inf;Inf];
-            sys.x.min = [Inf;-0.1745;Inf;Inf];
+            sys.x.min = [-Inf;-0.1745;-Inf;-Inf];
             sys.u.min = [-0.26];
             sys.u.max = [0.26];
             sys.x.penalty = QuadFunction(Q);
@@ -70,8 +74,15 @@ classdef MpcControl_x < MpcControlBase
             end
             con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
             obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
-
-
+            
+            %title('Projection of terminal set on 1st and 2nd dimensions')
+            %Xf.projection(1:2).plot();
+            
+            %title('Projection of terminal set on 2nd and 3rd dimensions')
+            %Xf.projection(2:3).plot();
+            
+            %title('Projection of terminal set on 3rd and 4th dimensions')
+            %Xf.projection(3:4).plot();
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

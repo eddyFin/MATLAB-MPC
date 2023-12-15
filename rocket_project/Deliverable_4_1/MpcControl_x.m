@@ -1,0 +1,209 @@
+classdef MpcControl_x < MpcControlBase
+    
+    methods
+        % Design a YALMIP optimizer object that takes a steady-state state
+        % and input (xs, us) and returns a control input
+        function ctrl_opti = setup_controller(mpc, Ts, H)
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % INPUTS
+            %   X(:,1)       - initial state (estimate)
+            %   x_ref, u_ref - reference state/input
+            % OUTPUTS
+            %   U(:,1)       - input to apply to the system
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            N_segs = ceil(H/Ts); % Horizon steps
+            N = N_segs + 1;      % Last index in 1-based Matlab indexing
+
+            [nx, nu] = size(mpc.B);
+            
+            % Targets (Ignore this before Todo 3.2)
+            x_ref = sdpvar(nx, 1);
+            u_ref = sdpvar(nu, 1);
+            
+            % Predicted state and input trajectories
+            X = sdpvar(nx, N);
+            U = sdpvar(nu, N-1);
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            
+            % NOTE: The matrices mpc.A, mpc.B, mpc.C and mpc.D are
+            %       the DISCRETE-TIME MODEL of your system
+            
+            % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
+            % state constraints
+            F = [0 1 0 0; 0 -1 0 0];
+            f = [0.1745; 0.1745]; %rad
+
+            % input constraints
+            M = [1; -1];
+            m = [0.26; 0.26];
+            
+            % matrices
+            Q = 100*eye(4);
+            Q(4,4) = 1000;
+
+            R = 1;
+            sys = LTISystem('A',mpc.A,'B',mpc.B);
+
+            sys.x.max = [Inf;0.1745;Inf;Inf];
+            sys.x.min = [-Inf;-0.1745;-Inf;-Inf];
+            sys.u.min = [-0.26];
+            sys.u.max = [0.26];
+            sys.x.penalty = QuadFunction(Q);
+            sys.u.penalty = QuadFunction(R);
+
+            Qf = sys.LQRPenalty.weight;
+            Xf = sys.LQRSet;
+            % [~, Qf_2, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
+            % assert(all(Qf-Qf_2<1e-6))
+            Ff = double(Xf.A);
+            ff = double(Xf.b);
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%% SLACK
+            % function ctrl_opti_eps = slack(xi_nex,xi,ui, N, F, Ff, ff)
+            % 
+            % 
+            %     eps = sdpvar(size(F,1),N);
+            % 
+            %     con_eps = [];
+            %     obj_eps = [];
+            % 
+            % 
+            % 
+            %     con_eps = [con_eps, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            %     obj_eps = obj_eps + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight    
+            % 
+            %     % Return YALMIP optimizer object
+            %     ctrl_opti = optimizer(con_eps, obj, sdpsettings('solver','gurobi'), ...
+            %         {X(:,1), x_ref, u_ref}, {U(:,1), X, U});
+            % end
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            obj = 0;
+            con = [];
+            S = eye(2);
+            s = [1;1];
+    
+            for i = 1:N-1
+                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
+                if i~=1
+                    %%%%%%%%%SLACK
+                    eps = sdpvar(size(F,1),1);
+            
+                    con_eps = [];
+                    obj_eps = eps'*S*eps + s'*eps;
+        
+                    [con_eps, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
+                     temp = f + eps;
+                    con_eps = [con_eps, F*(X(:,i)) <= temp]; % state
+                    con_eps = [con_eps, M*(U(:,i)) <= m]; % input
+        
+                    % Return YALMIP optimizer object
+                    ctrl_opti_eps = optimizer(con_eps, obj_eps, sdpsettings('solver','gurobi'), ...
+                        {X(:,i), U(:,i)}, {eps});
+
+                    [eps_i,isfeasible] = ctrl_opti_eps(X(:,i), U(:,i));
+                    
+                    %%%%%%%%%%%%%%
+                    con = [con, F*(X(:,i)) <= f + eps_i]; % State constraints
+
+                end
+                con = [con, M*U(:,i) <= m]; % Input constraints
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
+            end
+            con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+
+            % title('Projection of terminal set on 1st and 2nd dimensions')
+            % Xf.projection(1:2).plot();
+            % 
+            % title('Projection of terminal set on 2nd and 3rd dimensions')
+            % Xf.projection(2:3).plot();
+            % 
+            % title('Projection of terminal set on 3rd and 4th dimensions')
+            % Xf.projection(3:4).plot();
+            
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            % Return YALMIP optimizer object
+            ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
+                {X(:,1), x_ref, u_ref}, {U(:,1), X, U});
+        end
+        
+        % Design a YALMIP optimizer object that takes a position reference
+        % and returns a feasible steady-state state and input (xs, us)
+        function target_opti = setup_steady_state_target(mpc)
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % INPUTS
+            %   ref    - reference to track
+            % OUTPUTS
+            %   xs, us - steady-state target
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            nx = size(mpc.A, 1);
+
+            % Steady-state targets
+            xs = sdpvar(nx, 1);
+            us = sdpvar;
+            
+            % Reference position (Ignore this before Todo 3.2)
+            ref = sdpvar;
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
+
+            % compute the steady state corresponding to reference
+            obj = 0;
+            con = [xs == 0, us == 0];
+             
+            Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
+
+           
+
+            Q_sigma = 0.01*eye(4);
+
+            R_sigma = 1;
+
+            B_Sigma = [zeros(nx,1); ref];
+            
+            obj = us'*R_sigma*us;
+            
+            % state constraints
+            F = [0 1 0 0; 0 -1 0 0];
+            f = [0.1745; 0.1745]; %rad
+
+            % input constraints
+            M = [1; -1];
+            m = [0.26; 0.26];
+
+            con = [Sigma*[xs;us]==B_Sigma,
+                           F*xs<=f,
+                           M*us<= m];
+            diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
+            double(xs)
+            
+            if diagnostics.problem ~= 0
+                % no solution exists: compute reachable set point that is
+                % closest to ref
+                obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
+                con = [xs == mpc.A*xs + mpc.B*us,
+                           F*xs<=f,
+                           M*us<= m];
+                solvesdp(con,obj,sdpsettings('verbose',0));
+            end
+            
+            
+
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            % Compute the steady-state target
+            target_opti = optimizer(con, obj, sdpsettings('solver', 'gurobi'), ref, {xs, us});
+        end
+    end
+end

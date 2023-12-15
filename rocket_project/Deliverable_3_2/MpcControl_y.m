@@ -1,4 +1,4 @@
-classdef MpcControl_roll < MpcControlBase
+classdef MpcControl_y < MpcControlBase
     
     methods
         % Design a YALMIP optimizer object that takes a steady-state state
@@ -11,14 +11,14 @@ classdef MpcControl_roll < MpcControlBase
             %   x_ref, u_ref - reference state/input
             % OUTPUTS
             %   U(:,1)       - input to apply to the system
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             N_segs = ceil(H/Ts); % Horizon steps
             N = N_segs + 1;      % Last index in 1-based Matlab indexing
-            
+
             [nx, nu] = size(mpc.B);
             
-            % Steady-state targets (Ignore this before Todo 3.2)
+            % Targets (Ignore this before Todo 3.2)
             x_ref = sdpvar(nx, 1);
             u_ref = sdpvar(nu, 1);
             
@@ -36,22 +36,23 @@ classdef MpcControl_roll < MpcControlBase
             obj = 0;
             con = [];
             % state constraints
-            %none 
+            F = [0 1 0 0; 0 -1 0 0];
+            f = [0.1745; 0.1745]; %rad
 
             % input constraints
             M = [1; -1];
-            m = [20; 20];
+            m = [0.26; 0.26];
             
             % matrices
-            Q = 50*eye(2);
+            Q = 0.0001*eye(4);
 
-            R = 0.1;
+            R = 1;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            sys.x.max = [Inf;Inf];
-            sys.x.min = [-Inf;-Inf];
-            sys.u.min = [-20];
-            sys.u.max = [20];
+            sys.x.max = [Inf;0.1745;Inf;Inf];
+            sys.x.min = [-Inf;-0.1745;-Inf;-Inf];
+            sys.u.min = [-0.26];
+            sys.u.max = [0.26];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
@@ -65,13 +66,17 @@ classdef MpcControl_roll < MpcControlBase
             obj = 0;
             con = [];
 
-            for i = 1:N-1
-                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)]; % System dynamics
+             for i = 1:N-1
+                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
+                if i~=1
+                    con = [con, F*(X(:,i)) <= f]; % State constraints
+
+                end
                 con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + X(:,i)'*Q*X(:,i) + U(:,i)'*R*U(:,i); % Cost function
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
-            obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
+            con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -91,8 +96,9 @@ classdef MpcControl_roll < MpcControlBase
             %   xs, us - steady-state target
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
-            % Steady-state targets
             nx = size(mpc.A, 1);
+
+            % Steady-state targets
             xs = sdpvar(nx, 1);
             us = sdpvar;
             
@@ -102,9 +108,45 @@ classdef MpcControl_roll < MpcControlBase
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
+           
             obj = 0;
             con = [xs == 0, us == 0];
+             
+            Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
+
+           
+
+            Q_sigma = 0.01*eye(4);
+
+            R_sigma = 1;
+
+            B_Sigma = [zeros(nx,1); ref];
             
+            obj = us'*R_sigma*us;
+            
+            % state constraints
+            F = [0 1 0 0; 0 -1 0 0];
+            f = [0.1745; 0.1745]; %rad
+
+            % input constraints
+            M = [1; -1];
+            m = [0.26; 0.26];
+
+            con = [Sigma*[xs;us]==B_Sigma,
+                           F*xs<=f,
+                           M*us<= m];
+            diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
+            double(xs)
+            
+            if diagnostics.problem ~= 0
+                % no solution exists: compute reachable set point that is
+                % closest to ref
+                obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
+                con = [xs == mpc.A*xs + mpc.B*us,
+                           F*xs<=f,
+                           M*us<= m];
+                solvesdp(con,obj,sdpsettings('verbose',0));
+            end
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

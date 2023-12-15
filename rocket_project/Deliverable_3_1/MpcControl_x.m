@@ -42,9 +42,9 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            Q = 0.0001*eye(4);
+            Q = eye(4);
 
-            R = 1;
+            R = 100;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;0.1745;Inf;Inf];
@@ -56,33 +56,37 @@ classdef MpcControl_x < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            
+            % [~, Qf_2, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
+            % assert(all(Qf-Qf_2<1e-6))
             Ff = double(Xf.A);
             ff = double(Xf.b);
 
             obj = 0;
             con = [];
 
+
             for i = 1:N-1
                 con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)]; % System dynamics
                 if i~=1
                     con = [con, F*X(:,i) <= f]; % State constraints
+
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + X(:,i)'*Q*X(:,i) + U(:,i)'*R*U(:,i); % Cost function
             end
             con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
             obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
-            
-            %title('Projection of terminal set on 1st and 2nd dimensions')
-            %Xf.projection(1:2).plot();
-            
-            %title('Projection of terminal set on 2nd and 3rd dimensions')
-            %Xf.projection(2:3).plot();
-            
-            %title('Projection of terminal set on 3rd and 4th dimensions')
-            %Xf.projection(3:4).plot();
+
+            fprintf('bob\n')
+
+            % title('Projection of terminal set on 1st and 2nd dimensions')
+            % Xf.projection(1:2).plot();
+            % 
+            % title('Projection of terminal set on 2nd and 3rd dimensions')
+            % Xf.projection(2:3).plot();
+            % 
+            % title('Projection of terminal set on 3rd and 4th dimensions')
+            % Xf.projection(3:4).plot();
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

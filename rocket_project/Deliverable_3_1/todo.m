@@ -5,7 +5,6 @@ clear all
 clc
 
 %% Simulate the system:
-%git test
 
 Ts = 1/20;
 rocket = Rocket(Ts);

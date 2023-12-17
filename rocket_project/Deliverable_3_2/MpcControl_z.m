@@ -59,15 +59,15 @@ classdef MpcControl_z < MpcControlBase
             m = [80 - Us; -(50 - Us)];
             
             % matrices
-            Q = 50*eye(2);
+            Q = 20*eye(2);
 
-            R = 0.1;
+            R = 1;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];
             sys.x.min = [-Inf;-Inf];
-            sys.u.min = [50];
-            sys.u.max = [80];
+            sys.u.min = [50-Us];
+            sys.u.max = [80-Us];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 

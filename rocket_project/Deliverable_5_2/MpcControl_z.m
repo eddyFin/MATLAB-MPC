@@ -58,26 +58,27 @@ classdef MpcControl_z < MpcControlBase
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
-            
+            %m = [80 - Us; -(0 - Us)];
             % matrices
             Q = [1000 0; 0 10000];
-
+            %Q = [10 0; 0 10];
             R = 0.001;
+            %R = 1;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            sys.x.max = [Inf;Inf];
-            sys.x.min = [-Inf;-Inf];
-            sys.u.min = [50];
-            sys.u.max = [80];
+            % sys.x.max = [Inf;Inf];
+            % sys.x.min = [-Inf;-Inf];
+            % sys.u.min = [50];
+            % sys.u.max = [80];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            Xf = sys.LQRSet;
+            % Xf = sys.LQRSet;
             %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
-            Ff = double(Xf.A);
-            ff = double(Xf.b);
+            % Ff = double(Xf.A);
+            % ff = double(Xf.b);
 
             obj = 0;
             con = [];
@@ -167,8 +168,8 @@ classdef MpcControl_z < MpcControlBase
                 % no solution exists: compute reachable set point that is
                 % closest to ref
                 obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
-                con = [xs == mpc.A*xs + mpc.B*us,
-                          
+                %con = [xs == mpc.A*xs + mpc.B*us,
+                 con = [xs == mpc.A*xs + mpc.B*us + Bd*d_est,         
                            M*us<= m];
                 solvesdp(con,obj,sdpsettings('verbose',0));
             end

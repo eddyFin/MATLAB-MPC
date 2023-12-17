@@ -48,20 +48,20 @@ classdef MpcControl_x < MpcControlBase
 
             R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
-
-            sys.x.max = [Inf;0.1745;Inf;Inf];
-            sys.x.min = [-Inf;-0.1745;-Inf;-Inf];
-            sys.u.min = [-0.26];
-            sys.u.max = [0.26];
+            % 
+            % sys.x.max = [Inf;0.1745;Inf;Inf];
+            % sys.x.min = [-Inf;-0.1745;-Inf;-Inf];
+            % sys.u.min = [-0.26];
+            % sys.u.max = [0.26];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            Xf = sys.LQRSet;
+            % Xf = sys.LQRSet;
             % [~, Qf_2, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             % assert(all(Qf-Qf_2<1e-6))
-            Ff = double(Xf.A);
-            ff = double(Xf.b);
+            % Ff = double(Xf.A);
+            % ff = double(Xf.b);
 
             obj = 0;
             con = [];

@@ -49,19 +49,19 @@ classdef MpcControl_roll < MpcControlBase
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            sys.x.max = [Inf;Inf];
-            sys.x.min = [-Inf;-Inf];
-            sys.u.min = [-20];
-            sys.u.max = [20];
+            % sys.x.max = [Inf;Inf];
+            % sys.x.min = [-Inf;-Inf];
+            % sys.u.min = [-20];
+            % sys.u.max = [20];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            
-            Ff = double(Xf.A);
-            ff = double(Xf.b);
+            % Xf = sys.LQRSet;
+            % %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
+            % 
+            % Ff = double(Xf.A);
+            % ff = double(Xf.b);
 
             obj = 0;
             con = [];

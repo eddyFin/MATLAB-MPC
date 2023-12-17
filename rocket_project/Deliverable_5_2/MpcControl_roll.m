@@ -49,19 +49,12 @@ classdef MpcControl_roll < MpcControlBase
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            sys.x.max = [Inf;Inf];
-            sys.x.min = [-Inf;-Inf];
-            sys.u.min = [-20];
-            sys.u.max = [20];
+            
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
-            Ff = double(Xf.A);
-            ff = double(Xf.b);
 
             obj = 0;
             con = [];
@@ -72,7 +65,7 @@ classdef MpcControl_roll < MpcControlBase
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
 
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

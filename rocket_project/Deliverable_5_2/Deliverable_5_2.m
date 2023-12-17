@@ -4,16 +4,12 @@ close all
 clear all
 clc
 
-%% TODO: This file should produce all the plots for the deliverable
-%% TODO: This file should produce all the plots for the deliverable
+
 %% 
 
 Ts = 1/20;
 rocket = Rocket(Ts);
 
-%% TODO: This file should produce all the plots for the deliverable
-
-rocket = Rocket(Ts);
 %% 
 [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
 sys = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
@@ -41,11 +37,13 @@ Tf = 20;
 rocket.mass = 2.13;
 rocket.mass_rate = - 0.27 ;
 
-% [T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);
-% % Visualize
-% rocket.anim_rate = 20; % Increase this to make the animation faster
-% ph = rocket.plotvis(T, X, U, Ref);
+% System without estimator
+[T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);
+% Visualize
+rocket.anim_rate = 20; % Increase this to make the animation faster
+ph = rocket.plotvis(T, X, U, Ref);
 
+% System with estimator
 [T, X, U, Ref, Z_hat] = rocket.simulate_est_z(x0, Tf, @mpc.get_u, ref, mpc_z, sys_z);
 % Visualize
 rocket.anim_rate = 3; % Increase this to make the animation faster

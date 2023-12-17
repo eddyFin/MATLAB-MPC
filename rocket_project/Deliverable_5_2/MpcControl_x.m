@@ -49,20 +49,13 @@ classdef MpcControl_x < MpcControlBase
             R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            sys.x.max = [Inf;0.1745;Inf;Inf];
-            sys.x.min = [-Inf;-0.1745;-Inf;-Inf];
-            sys.u.min = [-0.26];
-            sys.u.max = [0.26];
+            
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            Xf = sys.LQRSet;
-            % [~, Qf_2, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            % assert(all(Qf-Qf_2<1e-6))
-            Ff = double(Xf.A);
-            ff = double(Xf.b);
-
+            
+            
             obj = 0;
             con = [];
 
@@ -76,17 +69,10 @@ classdef MpcControl_x < MpcControlBase
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
 
-            % title('Projection of terminal set on 1st and 2nd dimensions')
-            % Xf.projection(1:2).plot();
-            % 
-            % title('Projection of terminal set on 2nd and 3rd dimensions')
-            % Xf.projection(2:3).plot();
-            % 
-            % title('Projection of terminal set on 3rd and 4th dimensions')
-            % Xf.projection(3:4).plot();
+            
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

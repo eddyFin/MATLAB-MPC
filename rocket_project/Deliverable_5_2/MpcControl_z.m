@@ -58,27 +58,20 @@ classdef MpcControl_z < MpcControlBase
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
-            %m = [80 - Us; -(0 - Us)];
+            
             % matrices
             Q = [1000 0; 0 10000];
-            %Q = [10 0; 0 10];
+            
             R = 0.001;
-            %R = 1;
+            
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            % sys.x.max = [Inf;Inf];
-            % sys.x.min = [-Inf;-Inf];
-            % sys.u.min = [50];
-            % sys.u.max = [80];
+            
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            % Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
-            % Ff = double(Xf.A);
-            % ff = double(Xf.b);
 
             obj = 0;
             con = [];
@@ -88,19 +81,10 @@ classdef MpcControl_z < MpcControlBase
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
             
-            %plot(Xf)
-
-            %title('Projection of terminal set on 1st and 2nd dimensions')
-            %Xf.projection(1:2).plot();
             
-            %title('Projection of terminal set on 2nd and 3rd dimensions')
-            %Xf.projection(2:3).plot();
-            
-            %title('Projection of terminal set on 3rd and 4th dimensions')
-            %Xf.projection(3:4).plot();
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -168,12 +152,12 @@ classdef MpcControl_z < MpcControlBase
                 % no solution exists: compute reachable set point that is
                 % closest to ref
                 obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
-                %con = [xs == mpc.A*xs + mpc.B*us,
+                
                  con = [xs == mpc.A*xs + mpc.B*us + Bd*d_est,         
                            M*us<= m];
                 solvesdp(con,obj,sdpsettings('verbose',0));
             end
-            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            
             
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
@@ -198,7 +182,7 @@ classdef MpcControl_z < MpcControlBase
             
             % x+ = A * x +B * u +Bd * d
 
-            % I POLI VANNO POI TUNATI
+            
 
             Bd = mpc.B;
             Cd = 0;

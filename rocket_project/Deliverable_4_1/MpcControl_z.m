@@ -57,17 +57,23 @@ classdef MpcControl_z < MpcControlBase
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
-            
-            % matrices
-            Q = [50 0; 0 200];
+            %m = [Inf; Inf];
 
-            R = 1;
+            % soft constraints variables
+            S = 100*eye(2);
+            s = 0;
+            epsilon = sdpvar(size(M,1),N-1);
+
+            % matrices
+            Q = [1000 0; 0 10000];
+
+            R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];
             sys.x.min = [-Inf;-Inf];
-            sys.u.min = [50];
-            sys.u.max = [80];
+            sys.u.min = [50- Us];
+            sys.u.max = [80 - Us];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
@@ -84,11 +90,11 @@ classdef MpcControl_z < MpcControlBase
             for i = 1:N-1
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
                 
-                con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
+                con = [con, M*U(:,i) <= m+ epsilon(:,i)]; % Input constraints
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
-            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
             
             %plot(Xf)
 
@@ -105,7 +111,7 @@ classdef MpcControl_z < MpcControlBase
             
             % Return YALMIP optimizer object
             ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
-                {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U});
+                {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U, epsilon});
         end
         
         
@@ -171,7 +177,7 @@ classdef MpcControl_z < MpcControlBase
                            M*us<= m];
                 solvesdp(con,obj,sdpsettings('verbose',0));
             end
-            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            
             
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

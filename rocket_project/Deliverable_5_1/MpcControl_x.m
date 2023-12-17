@@ -42,10 +42,11 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            Q = 100*eye(4);
+            Q =200*eye(4);
+            Q(1,1) = 1000;
             Q(4,4) = 1000;
 
-            R = 1;
+            R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;0.1745;Inf;Inf];
@@ -61,64 +62,22 @@ classdef MpcControl_x < MpcControlBase
             % assert(all(Qf-Qf_2<1e-6))
             Ff = double(Xf.A);
             ff = double(Xf.b);
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%% SLACK
-            % function ctrl_opti_eps = slack(xi_nex,xi,ui, N, F, Ff, ff)
-            % 
-            % 
-            %     eps = sdpvar(size(F,1),N);
-            % 
-            %     con_eps = [];
-            %     obj_eps = [];
-            % 
-            % 
-            % 
-            %     con_eps = [con_eps, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
-            %     obj_eps = obj_eps + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight    
-            % 
-            %     % Return YALMIP optimizer object
-            %     ctrl_opti = optimizer(con_eps, obj, sdpsettings('solver','gurobi'), ...
-            %         {X(:,1), x_ref, u_ref}, {U(:,1), X, U});
-            % end
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
             obj = 0;
             con = [];
-            S = eye(2);
-            s = [1;1];
-            epsilon = sdpvar(size(F,1),N);
 
+    
             for i = 1:N-1
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
                 if i~=1
-                    %%%%%%%%%%SLACK
-                    
-                    % 
-                    % con_eps = [];
-                    % obj_eps = eps'*S*eps + s'*eps;
-                    % 
-                    % [con_eps, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
-                    %  temp = f + eps;
-                    % con_eps = [con_eps, F*(X(:,i)) <= temp]; % state
-                    % con_eps = [con_eps, M*(U(:,i)) <= m]; % input
-                    % 
-                    % % Return YALMIP optimizer object
-                    % ctrl_opti_eps = optimizer(con_eps, obj_eps, sdpsettings('solver','gurobi'), ...
-                    %     {X(:,i), U(:,i)}, {eps});
-                    % 
-                    % [eps_i,isfeasible] = ctrl_opti_eps(X(:,i), U(:,i));
-                    % 
-                    % %%%%%%%%%%%%%%
-
-
-
-                    con = [con, F*(X(:,i)) <= f + epsilon(:,i)]; % State constraints
+                    con = [con, F*(X(:,i)) <= f]; % State constraints
 
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i); % Cost function
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
-            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N)'*S*epsilon(:,N); % Terminal weight
+            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
 
             % title('Projection of terminal set on 1st and 2nd dimensions')
             % Xf.projection(1:2).plot();

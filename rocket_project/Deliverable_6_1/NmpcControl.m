@@ -89,21 +89,46 @@ classdef NmpcControl < handle
             Xf = sys.LQRSet;
             Ff = double(Xf.A);
             ff = double(Xf.b);
-            eq_constr = [];
-            ineq_constr = [];
-            ineq_constr1 = [];
-            for k = 1:N-1
-                cost = cost+ X_sym(:,k)'*Q*X_sym(:,k)+U_sym(:,k)'*R*U_sym(:,k);
-                % Equality constraints (Casadi SX), each entry == 0
-                eq_constr = [ eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k)) ];
-                % Inequality constraints (Casadi SX), each entry <= 0
-                ineq_constr = [ ineq_constr; M_ona*U_sym(:,k) - m_ona ];
-                ineq_constr1  = [ ineq_constr1; F_ona*X_sym(:,k) -f_ona ];
-            end
-            ineq_constr3 = [ineq_constr; ineq_constr1];
-            cost = cost+X_sym(:,end)'*Q*X_sym(:,end);
-            ineq_constr = [ineq_constr;Ff*X_sym(:,end) -ff ];
+            % eq_constr = [];
+            % ineq_constr = [];
+            % ineq_constr1 = [];
+            % for k = 1:N-1
+            %     cost = cost+ X_sym(:,k)'*Q*X_sym(:,k)+U_sym(:,k)'*R*U_sym(:,k);
+            %     % Equality constraints (Casadi SX), each entry == 0
+            %     eq_constr = [ eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k)) ];
+            %     % Inequality constraints (Casadi SX), each entry <= 0
+            %     ineq_constr = [ ineq_constr; M_ona*U_sym(:,k) - m_ona ];
+            %     ineq_constr1  = [ ineq_constr1; F_ona*X_sym(:,k) -f_ona ];
+            % end
+            % ineq_constr3 = [ineq_constr; ineq_constr1];
+            % cost = cost+X_sym(:,end)'*Q*X_sym(:,end);
+            % ineq_constr = [ineq_constr;Ff*X_sym(:,end) -ff ];
 
+
+
+            % Initialize constraints matrices
+            eq_constr = [];
+            ineq_constr1 = [];
+            ineq_constr2 = [];
+            
+            for k = 1:N-1
+                % Cost function update (assuming cost is defined earlier)
+                cost = cost + X_sym(:,k)'*Q*X_sym(:,k) + U_sym(:,k)'*R*U_sym(:,k);
+            
+                % Equality constraints
+                eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
+            
+                % Inequality constraints
+                ineq_constr1 = [ineq_constr1; M_ona*U_sym(:,k) - m_ona];
+                ineq_constr2 = [ineq_constr2; F_ona*X_sym(:,k) - f_ona];
+            end
+            
+            % Combine inequality constraints
+            ineq_constr = [ineq_constr1; ineq_constr2];
+            
+            % Terminal cost and constraints
+            cost = cost + X_sym(:,end)'*Q*X_sym(:,end);
+            ineq_constr = [ineq_constr; Ff*X_sym(:,end) - ff];
             
             
             
@@ -153,6 +178,7 @@ classdef NmpcControl < handle
             
             % Members for delay compensation
             obj.rocket = rocket;
+            expected_delay = 0;
             obj.expected_delay = expected_delay;
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

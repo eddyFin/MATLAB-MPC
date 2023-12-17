@@ -8,6 +8,9 @@ clc
 
 Ts = 1/20;
 rocket = Rocket(Ts);
+
+rocket.delay = 0;
+
 H = 8; % Horizon length in seconds
 nmpc = NmpcControl(rocket, H);
 % MPC reference with default maximum roll = 15 deg
@@ -19,6 +22,8 @@ ref = @(t_, x_) ref_TVC(t_);
 
 % Evaluate once and plot optimal open−loop trajectory,
 % pad last input to get consistent size with time and state
+x = zeros(12,1);
+x(11) = 1;
 [u, T_opt, X_opt, U_opt] = nmpc.get_u(x, ref);
 U_opt(:,end+1) = nan;
 ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);

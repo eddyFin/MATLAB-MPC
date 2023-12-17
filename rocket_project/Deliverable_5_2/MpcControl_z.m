@@ -49,7 +49,8 @@ classdef MpcControl_z < MpcControlBase
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
-            
+
+          
             % state constraints
             %none
     
@@ -59,15 +60,15 @@ classdef MpcControl_z < MpcControlBase
             m = [80 - Us; -(50 - Us)];
             
             % matrices
-            Q = [20 0; 0 20];
+            Q = [1000 0; 0 10000];
 
-            R = 1;
+            R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];
             sys.x.min = [-Inf;-Inf];
-            sys.u.min = 50-Us;
-            sys.u.max = 80-Us;
+            sys.u.min = [50];
+            sys.u.max = [80];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
@@ -82,13 +83,12 @@ classdef MpcControl_z < MpcControlBase
             con = [];
 
             for i = 1:N-1
-                con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)]; % System dynamics
-               
+                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
                 con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + X(:,i)'*Q*X(:,i) + U(:,i)'*R*U(:,i); % Cost function
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
-            obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
+            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
             
             %plot(Xf)
 
@@ -138,6 +138,42 @@ classdef MpcControl_z < MpcControlBase
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
             obj = 0;
             con = [xs == 0, us == 0];
+
+            Bd = mpc.B;
+            Cd = 0;
+
+            Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];   
+
+            Q_sigma = 0.01*eye(2);
+
+            R_sigma = 1;
+
+            B_Sigma = [Bd*d_est; ref - Cd*d_est]; % Cd è zero quindi si puo lasciare r
+            
+            obj = us'*R_sigma*us;
+            
+             % input constraints
+            Us = 56.6666665401736;  % Steady state input
+            M = [1; -1];
+            m = [80 - Us; -(50 - Us)];
+            
+            con = [Sigma*[xs;us]==B_Sigma,
+                           
+                           M*us<= m];
+            diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
+            double(xs)
+            
+            if diagnostics.problem ~= 0
+                % no solution exists: compute reachable set point that is
+                % closest to ref
+                obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
+                con = [xs == mpc.A*xs + mpc.B*us,
+                          
+                           M*us<= m];
+                solvesdp(con,obj,sdpsettings('verbose',0));
+            end
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -159,10 +195,20 @@ classdef MpcControl_z < MpcControlBase
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
             
-            A_bar = [];
-            B_bar = [];
-            C_bar = [];
-            L = [];
+            % x+ = A * x +B * u +Bd * d
+
+            % I POLI VANNO POI TUNATI
+
+            Bd = mpc.B;
+            Cd = 0;
+            n = size(mpc.A,2);
+            m = size(mpc.B,2);
+        
+            
+            A_bar = [mpc.A Bd; zeros(m,n) eye(m)];
+            B_bar = [mpc.B; zeros(m)];
+            C_bar = [mpc.C Cd];
+            L = (-place(A_bar',C_bar', [0.5 0.6 0.7]))';
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

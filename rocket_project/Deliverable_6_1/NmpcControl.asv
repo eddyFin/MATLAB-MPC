@@ -84,7 +84,9 @@ classdef NmpcControl < handle
             sys2 = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
             sys = LTISystem('A',sys2.A,'B',sys2.B);
             sys.x.max = [Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf,Inf];
-            sys.x.min = -[Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf,Inf];
+            sys.x.max = deg2rad(75);
+            
+            sys.x.min = -inf(nx, 1);
             sys.u.max = m_ona(1:2:end);
             sys.u.min = -m_ona(2:2:end);
             
@@ -93,7 +95,6 @@ classdef NmpcControl < handle
             Xf = sys.LQRSet;
             Ff = double(Xf.A);
             ff = double(Xf.b);
-            Qf = sys.LQRPenalty.weight;
             % eq_constr = [];
             % ineq_constr = [];
             % ineq_constr1 = [];
@@ -132,7 +133,7 @@ classdef NmpcControl < handle
             ineq_constr = [ineq_constr1; ineq_constr2];
             
             % Terminal cost and constraints
-            cost = cost + X_sym(:,end)'*Qf*X_sym(:,end);
+            cost = cost + X_sym(:,end)'*Q*X_sym(:,end);
             ineq_constr = [ineq_constr; Ff*X_sym(:,end) - ff];
             
             

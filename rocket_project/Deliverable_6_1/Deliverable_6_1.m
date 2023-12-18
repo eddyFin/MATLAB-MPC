@@ -25,14 +25,14 @@ ref = [0.5, 0, 1, deg2rad(5)]';
 x = zeros(12,1);
 x(10:12) = 3;
 
-% [u, T_opt, X_opt, U_opt] = nmpc.get_u(x, ref);
-% U_opt(:,end+1) = nan;
-% ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
-
+[u, T_opt, X_opt, U_opt] = nmpc.get_u(x, ref);
+U_opt(:,end+1) = nan;
+ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
+%%
 
 Tf =20;
 [T, X, U, Ref] = rocket.simulate(x, Tf, @nmpc.get_u, ref);
- 
+
 % Visualize
 rocket.anim_rate = 20; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);

@@ -112,6 +112,10 @@ classdef NmpcControl < handle
             % ineq_constr = [ineq_constr;Ff*X_sym(:,end) -ff ];
 
             x_ref = [zeros(5,1);ref_sym(4,1);zeros(3,1);ref_sym(1:3,1)];
+            % Parameters (symbolic)
+            % x_ref  = SX.sym('x_ref', nx, 1);  % initial state
+            % u_ref = SX.sym('u_ref', nu, 1);  % target position
+
 
             % Initialize constraints matrices
             eq_constr = [X_sym(:, 1)-x0_sym];
@@ -121,13 +125,14 @@ classdef NmpcControl < handle
             for k = 1:N-1
                 % Cost function update (assuming cost is defined earlier)
                 cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + U_sym(:,k)'*R*U_sym(:,k);
-            
+                %cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k)-u_ref)'*R*(U_sym(:,k)-u_ref);
+
                 % Equality constraints
-                %eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
-                eq_constr = [eq_constr; X_sym(:, k+1) - rocket.f(X_sym(:,k),U_sym(:,k))];
+                eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
+                %eq_constr = [eq_constr; X_sym(:, k+1) - rocket.f(X_sym(:,k),U_sym(:,k))];
                 % Inequality constraints
-                ineq_constr1 = [ineq_constr1; M_ona*U_sym(:,k) - m_ona];
-                ineq_constr2 = [ineq_constr2; F_ona*X_sym(:,k) - f_ona];
+                ineq_constr1 = [ineq_constr1; M_ona*U_sym(:,k) - m_ona];    %input constraints
+                ineq_constr2 = [ineq_constr2; F_ona*X_sym(:,k) - f_ona];    % state constraints
             end
             
             % Combine inequality constraints
@@ -137,7 +142,9 @@ classdef NmpcControl < handle
             cost = cost + (X_sym(:,end)-x_ref)'*Qf*(X_sym(:,end)-x_ref);
             %ineq_constr = [ineq_constr; Ff*(X_sym(:,end)-x_ref) - ff];
             
-            
+            % % Steady state constraints
+            % ineq_constr = [ineq_constr; M_ona*u_ref- m_ona; F_ona*x_ref - f_ona];
+            % eq_constr = [eq_constr; x_ref - f_discrete(x_ref,u_ref)];
             
             
             
@@ -151,6 +158,7 @@ classdef NmpcControl < handle
             % ---- Assemble NLP ------
             nlp_x = [X_sym(:); U_sym(:)];
             nlp_p = [x0_sym; ref_sym];
+            %nlp_p = [x0_sym; ref_sym; x_ref; u_ref];
             nlp_f = cost;
             nlp_g = [eq_constr; ineq_constr];
             

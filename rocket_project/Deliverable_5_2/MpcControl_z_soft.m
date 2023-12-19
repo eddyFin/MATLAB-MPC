@@ -1,11 +1,11 @@
-classdef MpcControl_z < MpcControlBase
+classdef MpcControl_z_soft < MpcControlBase
     properties
         A_bar, B_bar, C_bar % Augmented system for disturbance rejection
         L                   % Estimator gain for disturbance rejection
     end
     
     methods
-        function mpc = MpcControl_z(sys, Ts, H)
+        function mpc = MpcControl_z_soft(sys, Ts, H)
             mpc = mpc@MpcControlBase(sys, Ts, H);
             
             [mpc.A_bar, mpc.B_bar, mpc.C_bar, mpc.L] = mpc.setup_estimator();
@@ -65,7 +65,7 @@ classdef MpcControl_z < MpcControlBase
             R = 0.001;
             
             % soft constraints variables
-            S = 10*eye(2);
+            S = 1000*eye(2);
             s = 0;
             epsilon = sdpvar(size(M,1),N-1);
 
@@ -80,21 +80,6 @@ classdef MpcControl_z < MpcControlBase
             obj = 0;
             con = [];
 
-            % for i = 1:N-1
-            %     con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
-            %     con = [con, M*U(:,i) <= m]; % Input constraints
-            %     obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
-            % end
-            % 
-            % obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
-            % 
-            % 
-            % % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
-            % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            % 
-            % % Return YALMIP optimizer object
-            % ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
-            %     {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U});
             for i = 1:N-1
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
                 con = [con, M*U(:,i) <= m]; % Input constraints

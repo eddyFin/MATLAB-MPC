@@ -40,6 +40,7 @@ classdef NmpcControl < handle
             x0_sym  = SX.sym('x0_sym', nx, 1);  % initial state
             ref_sym = SX.sym('ref_sym', 4, 1);  % target position
             
+            
             % Default state and input constraints
             ubx = inf(nx, 1);
             lbx = -inf(nx, 1);
@@ -71,8 +72,8 @@ classdef NmpcControl < handle
             f_ona(9,1) =deg2rad(75);
             f_ona(10,1) = deg2rad(75);
             
-            ubx(9,1) = deg2rad(75);
-            lbx(10,1) = deg2rad(-75);
+            ubx(5,1) = deg2rad(75);
+            lbx(5,1) = deg2rad(-75);
             
             ubu = m_ona(1:2:end);
             lbu = -m_ona(2:2:end);
@@ -84,18 +85,19 @@ classdef NmpcControl < handle
             [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
             sys2 = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
             sys = LTISystem('A',sys2.A,'B',sys2.B);
-            sys.x.max = [Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf,Inf];
-            sys.x.min = -[Inf, Inf, Inf, Inf, Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf,Inf];
+            sys.x.max = [Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf];
+            sys.x.min = -[Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf];
             %sys.u.max = m_ona(1:2:end);
             sys.u.max = [0.26 0.26 (80) 20 ]'-us;
             %sys.u.min = -m_ona(2:2:end);
-            sys.u.min = [0.26  0.26  -(50) 20]'+us;
+            sys.u.min = -[0.26  0.26  -(50) 20]'-us;
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
-            Xf = sys.LQRSet;
-            Ff = double(Xf.A);
-            ff = double(Xf.b);
+            % Xf = sys.LQRSet;
+            % Ff = double(Xf.A);
+            % ff = double(Xf.b);
             Qf = sys.LQRPenalty.weight;
+            Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
             % eq_constr = [];
             % ineq_constr = [];
             % ineq_constr1 = [];
@@ -112,7 +114,7 @@ classdef NmpcControl < handle
             % ineq_constr = [ineq_constr;Ff*X_sym(:,end) -ff ];
 
             x_ref = [zeros(5,1);ref_sym(4,1);zeros(3,1);ref_sym(1:3,1)];
-            % Parameters (symbolic)
+            % % Parameters (symbolic)
             % x_ref  = SX.sym('x_ref', nx, 1);  % initial state
             % u_ref = SX.sym('u_ref', nu, 1);  % target position
 
@@ -139,7 +141,8 @@ classdef NmpcControl < handle
             ineq_constr = [ineq_constr1; ineq_constr2];
             
             % Terminal cost and constraints
-            cost = cost + (X_sym(:,end)-x_ref)'*Qf*(X_sym(:,end)-x_ref);
+            %cost = cost + (X_sym(:,end)-x_ref)'*Qf*(X_sym(:,end)-x_ref);
+            cost = cost + (X_sym(:,end)-x_ref)'*Q*(X_sym(:,end)-x_ref);
             %ineq_constr = [ineq_constr; Ff*(X_sym(:,end)-x_ref) - ff];
             
             % % Steady state constraints
@@ -157,8 +160,8 @@ classdef NmpcControl < handle
             
             % ---- Assemble NLP ------
             nlp_x = [X_sym(:); U_sym(:)];
+            %nlp_x = [X_sym(:); U_sym(:); x_ref(:); u_ref(:)];
             nlp_p = [x0_sym; ref_sym];
-            %nlp_p = [x0_sym; ref_sym; x_ref; u_ref];
             nlp_f = cost;
             nlp_g = [eq_constr; ineq_constr];
             
@@ -166,6 +169,7 @@ classdef NmpcControl < handle
             
             % ---- Setup solver ------
             opts = struct('ipopt', struct('print_level', 0), 'print_time', false);
+            %opts = struct('ipopt', struct('print_level', 0), 'print_time', false, 'allow_free', true);
             obj.solver = nlpsol('solver', 'ipopt', nlp, opts);
             
             % ---- Assemble NLP bounds ----

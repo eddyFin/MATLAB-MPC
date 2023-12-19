@@ -58,16 +58,17 @@ classdef MpcControl_z < MpcControlBase
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
-            
+            %m = [80 - Us; -(30 - Us)];
             % matrices
             Q = [1000 0; 0 10000];
             
             R = 0.001;
             
             % soft constraints variables
-            S = 10*eye(2);
-            s = 0;
-            epsilon = sdpvar(size(M,1),N-1);
+            %S = [100 0; 0 1];
+            % S = eye(2)*0.01;
+            % s = 0;
+            % epsilon = sdpvar(size(M,1),N-1);
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -80,13 +81,28 @@ classdef MpcControl_z < MpcControlBase
             obj = 0;
             con = [];
 
+            for i = 1:N-1
+                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
+                con = [con, M*U(:,i) <= m]; % Input constraints
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
+            end
+
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+
+
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+            % Return YALMIP optimizer object
+            ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
+                {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U});
             % for i = 1:N-1
             %     con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
             %     con = [con, M*U(:,i) <= m]; % Input constraints
-            %     obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
+            %     obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
             % end
             % 
-            % obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+            % obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
             % 
             % 
             % % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
@@ -94,22 +110,7 @@ classdef MpcControl_z < MpcControlBase
             % 
             % % Return YALMIP optimizer object
             % ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
-            %     {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U});
-            for i = 1:N-1
-                con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
-                con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
-            end
-            
-            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
-            
-            
-            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
-            % Return YALMIP optimizer object
-            ctrl_opti = optimizer(con, obj, sdpsettings('solver','gurobi'), ...
-                {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U, epsilon});
+            %     {X(:,1), x_ref, u_ref, d_est}, {U(:,1), X, U, epsilon});
         end
         
         
@@ -160,7 +161,7 @@ classdef MpcControl_z < MpcControlBase
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
-            
+            %m = [80 - Us; -(30 - Us)];
             con = [Sigma*[xs;us]==B_Sigma,
                            
                            M*us<= m];

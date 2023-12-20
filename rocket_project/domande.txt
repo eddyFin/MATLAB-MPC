@@ -1,0 +1,13 @@
+--------5.2:
+Nel caso senza stimatore: perché la simulazione si interrompe per errori numerici dopo aver finito il carburante?
+Nel caso con stimatore: Perché la simulazione si interrompe per infeasibility (senza aver finito il carburante)? Se abbassiamo il vincolo su Pavg da 50 a 30 riusciamo a finire il carburante prima che la simulazione si interrompe.
+
+--------6.1:
+RIFERIMENTO COSTANTE
+-chiedere se va bene usare vettore x_ref con zero negli elementi diversi da ref_sym
+non abbiamo x_ref e u_ref calcolati come equilibrio considerando il riferimento
+Vanno inseriti x_ref e u_ref modificando il codice sotto???? Molto rischioso
+Alternativa: creare nuova funzione simile a target_opti che permette di calcolare x_ref u_ref
+-con H= 1 funziona meglio che con H=2  !!!!!!!!!!FARE!!!!!!!!
+RIFERIMENTO TEMPO VARIANTE:
+-come usar ref_TVC

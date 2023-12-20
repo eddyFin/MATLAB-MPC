@@ -62,7 +62,8 @@ classdef MpcControl_z < MpcControlBase
             % matrices
             Q = [1000 0; 0 10000];
             
-            R = 0.001;
+            %R = 0.001;
+            R = 1000;
             
             % soft constraints variables
             %S = [100 0; 0 1];
@@ -214,7 +215,7 @@ classdef MpcControl_z < MpcControlBase
             B_bar = [mpc.B; zeros(m)];
             C_bar = [mpc.C Cd];
             L = (-place(A_bar',C_bar', [0.5 0.6 0.7]*0.7))';
-            
+            %L = (-place(A_bar',C_bar', [0.5 0.6 0.7]*0.5))';
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         end

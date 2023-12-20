@@ -58,7 +58,8 @@ classdef MpcControl_z < MpcControlBase
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
             %m = [Inf; Inf];
-
+            M1 = [1;-1];
+            m1 = [100- Us; -(0 - Us)];
             % soft constraints variables
             S = 100*eye(2);
             s = 0;
@@ -91,6 +92,8 @@ classdef MpcControl_z < MpcControlBase
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
                 
                 con = [con, M*U(:,i) <= m+ epsilon(:,i)]; % Input constraints
+                con = [con, M1*U(:,i) <= m1]; % Input constraints
+                
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint

@@ -32,7 +32,7 @@ x(10:12) = 3;
 
 [u, T_opt, X_opt, U_opt] = nmpc.get_u(x, ref);
 U_opt(:,end+1) = nan;
-ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
+ph = rocket.plotvis(T_opt, X_opt, U_opt, ref); %%%%
 
 %%
 
@@ -42,3 +42,5 @@ ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
 % Visualize
 rocket.anim_rate = 20; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);
+
+%% 6.2 with delay

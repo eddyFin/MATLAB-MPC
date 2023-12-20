@@ -69,6 +69,10 @@ classdef MpcControl_z < MpcControlBase
             Q = [1000 0; 0 10000];
 
             R = 0.001;
+            %Q = diag([1, 10]);
+            %R = 0.1; 
+            %R = 0.01;
+
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];
@@ -178,7 +182,7 @@ classdef MpcControl_z < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                           
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
+                %solvesdp(con,obj,sdpsettings('verbose',0));
             end
             
             

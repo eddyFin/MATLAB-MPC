@@ -47,6 +47,9 @@ classdef MpcControl_roll < MpcControlBase
             Q = [100 0; 0 10000];
 
             R = 0.001;
+            % Q = diag([1, 400]);
+            % R = 0.01; %Pdiff
+            
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];

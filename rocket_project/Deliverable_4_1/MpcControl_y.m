@@ -53,7 +53,10 @@ classdef MpcControl_y < MpcControlBase
             Q(1,1) = 100;
             Q(4,4) = 1000;
 
-            R = 1;
+            R = 10;
+            % Q = diag([35, 1, 1,  10]);
+            % R = 1; %d2
+            
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;0.1745;Inf;Inf];

@@ -59,17 +59,20 @@ classdef MpcControl_z < MpcControlBase
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
             %m = [80 - Us; -(30 - Us)];
+            M1 = [1;-1];
+            m1 = [100- Us; -(0 - Us)];
             % matrices
             Q = [1000 0; 0 10000];
             
-            %R = 0.001;
-            R = 1000;
+            R = 0.001;
+            %R = 1000;
             
             % soft constraints variables
             %S = [100 0; 0 1];
-            % S = eye(2)*0.01;
-            % s = 0;
-            % epsilon = sdpvar(size(M,1),N-1);
+            %S = eye(2)*0.01;
+            %S = eye(2)*0.0000001;
+            %s = 0;
+            %epsilon = sdpvar(size(M,1),N-1);
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -78,6 +81,9 @@ classdef MpcControl_z < MpcControlBase
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
+            % Xf = sys.LQRSet;
+            % Ff = double(Xf.A);
+            % ff = double(Xf.b);
 
             obj = 0;
             con = [];
@@ -85,10 +91,14 @@ classdef MpcControl_z < MpcControlBase
             for i = 1:N-1
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i)) + mpc.B*d_est ]; % New System dynamics
                 con = [con, M*U(:,i) <= m]; % Input constraints
+                % con = [con, M*U(:,i) <= m+ epsilon(:,i)]; % Input constraints
+                % con = [con, M1*U(:,i) <= m1]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
+                %obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
             end
-
+            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+            %obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
 
 
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
@@ -168,15 +178,15 @@ classdef MpcControl_z < MpcControlBase
                            M*us<= m];
             diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
             double(xs)
-            
+
             if diagnostics.problem ~= 0
                 % no solution exists: compute reachable set point that is
                 % closest to ref
                 obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
-                
+
                  con = [xs == mpc.A*xs + mpc.B*us + Bd*d_est,         
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
+                %solvesdp(con,obj,sdpsettings('verbose',0));
             end
             
             

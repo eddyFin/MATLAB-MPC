@@ -38,11 +38,11 @@ rocket.mass = 2.13;
 rocket.mass_rate = - 0.27 ;
 %rocket.mass_rate = - 0.13 ;
 
-% % System without estimator
-% [T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);
-% % Visualize
-% rocket.anim_rate = 20; % Increase this to make the animation faster
-% ph = rocket.plotvis(T, X, U, Ref);
+% System without estimator
+[T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);
+% Visualize
+rocket.anim_rate = 20; % Increase this to make the animation faster
+ph = rocket.plotvis(T, X, U, Ref);
 %% 
 
 % System with estimator

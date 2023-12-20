@@ -31,6 +31,7 @@ x(10:12) = 3;
 [u, T_opt, X_opt, U_opt] = nmpc.get_u(x, ref);
 U_opt(:,end+1) = nan;
 ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
+
 %%
 
 Tf =20;

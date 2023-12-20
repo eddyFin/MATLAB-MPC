@@ -86,8 +86,8 @@ classdef NmpcControl < handle
             [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
             sys2 = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
             sys = LTISystem('A',sys2.A,'B',sys2.B);
-            sys.x.max = [Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf];
-            sys.x.min = -[Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf];
+            sys.x.max = [Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf]' -xs; %check
+            sys.x.min = -[Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf]' -xs; %check
             %sys.u.max = m_ona(1:2:end);
             sys.u.max = [0.26 0.26 (80) 20 ]'-us;
             %sys.u.min = -m_ona(2:2:end);

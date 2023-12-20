@@ -51,7 +51,9 @@ classdef NmpcControl < handle
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             
             % Cost
-            R = eye(nu);
+            %R = eye(nu);
+            %R = diag([0.0001 0.0001 1.5 0.0001]);
+            R = diag([0.001 0.001 1.5 0.0001]);
             %Q = eye(nx);
             Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
             cost =0;
@@ -153,7 +155,7 @@ classdef NmpcControl < handle
             % For box constraints on state and input, overwrite entries of
             % lbx, ubx, lbu, ubu defined above
             
-            expected_delay = rocket.delay;
+            expected_delay = 0;
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -202,7 +204,7 @@ classdef NmpcControl < handle
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
 
             u_init = zeros(4, 1); % Replace this by a better initialization
-            
+            u_init(3) = 56.666667; 
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.mem_u = repmat(u_init, 1, expected_delay);
@@ -213,7 +215,7 @@ classdef NmpcControl < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             delay = obj.expected_delay;
-            
+            %mem_u = obj.mem_u;
             
             % Delay compensation: Predict x0 delay timesteps later.
             % Simulate x_ for 'delay' timesteps
@@ -222,7 +224,7 @@ classdef NmpcControl < handle
            
             Ts = 1/40;
             for k = 1: delay
-                x_ = x_ + Ts*obj.rocket.f(x_, obj.mem_u);
+                x_ = x_ + Ts*obj.rocket.f(x_, obj.mem_u(:,k));
             end
             
 
@@ -243,7 +245,7 @@ classdef NmpcControl < handle
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             % Delay compensation: Save current u
             if obj.expected_delay > 0
-               % obj.mem_u = ...
+               obj.mem_u = repmat(u, 1, obj.expected_delay);
             end
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

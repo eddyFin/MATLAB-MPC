@@ -157,6 +157,8 @@ classdef NmpcControl < handle
             % For box constraints on state and input, overwrite entries of
             % lbx, ubx, lbu, ubu defined above
             
+            expected_delay = 0;
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -199,13 +201,12 @@ classdef NmpcControl < handle
             
             % Members for delay compensation
             obj.rocket = rocket;
-            expected_delay = 0;
             obj.expected_delay = expected_delay;
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
 
             u_init = zeros(4, 1); % Replace this by a better initialization
-            
+            u_init(3) = 56.666667;
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.mem_u = repmat(u_init, 1, expected_delay);

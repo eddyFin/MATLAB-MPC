@@ -133,6 +133,8 @@ classdef NmpcControl < handle
                 eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
                 %eq_constr = [eq_constr; X_sym(:, k+1) - rocket.f(X_sym(:,k),U_sym(:,k))];
                 % Inequality constraints
+                ineq_constr1 = [ineq_constr1; M_ona*U_sym(:,k) - m_ona];    %input constraints
+                ineq_constr2 = [ineq_constr2; F_ona*X_sym(:,k) - f_ona];    % state constraints
             end
             
             % Combine inequality constraints
@@ -255,7 +257,75 @@ classdef NmpcControl < handle
             % %
             % % stats = obj.solver.stats;
         end
-        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Design a YALMIP optimizer object that takes a position reference
+        % and returns a feasible steady-state state and input (xs, us)
+        function target_opti = setup_steady_state_target(mpc)
+            
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            % INPUTS
+            %   ref    - reference to track
+            % OUTPUTS
+            %   xs, us - steady-state target
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            import casadi.*
+            n_x =12;
+            n_u = 4;
+            % Steady-state targets
+            xs = SX.sym('xs', n_x, 1); % state 
+            us = SX.sym('us', n_u,1);  % input
+
+            % Reference position 
+            ref = SX.sym('ref', 4, 1);  % target position
+            
+            % Cost
+            R = eye(n_u);
+            
+            Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
+            cost =0;
+
+            % input constraints
+            M_ona = [1 0 0 0;-1 0 0 0;0 1 0 0; 0 -1 0 0; 0 0 1 0; 0 0 -1 0; 0 0 0 1; 0 0 0 -1];
+            %m_ona = [0.26 0.26 0.26 0.26 (80-56.666) -(50-56.66666) 20 20]';
+            m_ona = [0.26 0.26 0.26 0.26 (80) -(50) 20 20]';
+
+            
+            cost = 
+            
+            obj = us'*R_sigma*us;
+            
+             % input constraints
+            Us = 56.6666665401736;  % Steady state input
+            M = [1; -1];
+            m = [80 - Us; -(50 - Us)];
+            
+            con = [Sigma*[xs;us]==B_Sigma,
+                           
+                           M*us<= m];
+            diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
+            double(xs)
+            
+            if diagnostics.problem ~= 0
+                % no solution exists: compute reachable set point that is
+                % closest to ref
+                obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
+                con = [xs == mpc.A*xs + mpc.B*us,
+                          
+                           M*us<= m];
+                solvesdp(con,obj,sdpsettings('verbose',0));
+            end
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            
+            
+            % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
+            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            
+            % Compute the steady-state target
+            target_opti = optimizer(con, obj, sdpsettings('solver', 'gurobi'), {ref, d_est}, {xs, us});
+        end
+
+
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         function solve(obj, x0, ref)
             
             % ---- Set the initial state and reference ----

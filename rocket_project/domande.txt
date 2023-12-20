@@ -1,3 +1,5 @@
+--------4.1:
+Simulazione restituisce risultati soddisfacenti?
 --------5.2:
 Nel caso senza stimatore: perché la simulazione si interrompe per errori numerici dopo aver finito il carburante?
 Nel caso con stimatore: Perché la simulazione si interrompe per infeasibility (senza aver finito il carburante)? Se abbassiamo il vincolo su Pavg da 50 a 30 riusciamo a finire il carburante prima che la simulazione si interrompe.
@@ -11,3 +13,35 @@ Alternativa: creare nuova funzione simile a target_opti che permette di calcolar
 -con H= 1 funziona meglio che con H=2  !!!!!!!!!!FARE!!!!!!!!
 RIFERIMENTO TEMPO VARIANTE:
 -come usar ref_TVC
+
+
+
+
+
+--------6.1
+CONSTANT REFERENCE:
+-as we did in part 4.1, we have implemented a fucntion called target_opti that calculates the steady state given the reference, by optimizing a cost function given the state and input constraints. The output of this function was used inside the mpc optimizing problem: indeed in the function signature of the mpc controller there were x_ref and u_ref given as output of the function target opti.
+In this case we don't have x_ref and u_ref in the function signature of the nmpc controller, so we have 2 options:
+1) implement the same logic of the target opti_function, but this will require to modify the optimization problem varibales, which is out of our YUOR CODE HERE.
+2) use ref_sym parameter (target position, of size 4x1) to create a new parameter of size 12x1 that has all zeros apart the ones in x,y,z,gamma positions. Using this option we don't have u_ref, so our cost is:
+cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + U_sym(:,k)'*R*U_sym(:,k);
+cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k)-u_ref)'*R*(U_sym(:,k)-u_ref);
+This case is not formally correct and in addtion it "works" with a little offset on z only for H=1, whereas with a bigger H we have bigger offsets on z only.
+
+TIME VARYING REFERENCE:
+We are not able to manage it. 
+--------5.2:
+CASE WITHOUT ESTIMATOR:
+Simulationsn stops after finishing the fuel due to numerical problems, why? We have understood that it could be related to the fact that the robot is falling down at high speed.
+CASE WITH ESTIMATOR:
+Simulation stops after few seconds for infeasibility, even before the fuel is finished. If we change the lower bound for Pavg, the fuel is finished and the simulation ends due to infeasibility.
+
+
+--------4.1:
+Are results satisfying?
+
+
+
+
+
+

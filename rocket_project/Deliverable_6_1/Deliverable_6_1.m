@@ -11,7 +11,7 @@ rocket = Rocket(Ts);
 
 rocket.delay = 0;
 
-H = 2; % Horizon length in seconds
+H = 1; % Horizon length in seconds
 nmpc = NmpcControl(rocket, H);
 % MPC reference with default maximum roll = 15 deg
 %ref = @(t_, x_) ref_TVC(t_);

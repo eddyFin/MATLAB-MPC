@@ -52,7 +52,8 @@ classdef NmpcControl < handle
             
             % Cost
             R = eye(nu);
-            Q = eye(nx);
+            %Q = eye(nx);
+            Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
             cost =0;
 
             % input constraints
@@ -97,7 +98,6 @@ classdef NmpcControl < handle
             % Ff = double(Xf.A);
             % ff = double(Xf.b);
             Qf = sys.LQRPenalty.weight;
-            Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
             % eq_constr = [];
             % ineq_constr = [];
             % ineq_constr1 = [];

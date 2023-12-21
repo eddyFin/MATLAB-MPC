@@ -23,7 +23,9 @@ classdef NmpcControl < handle
     end
     
     methods
-        function obj = NmpcControl(rocket, tf)
+        function obj = NmpcControl(rocket, tf, expected_delay)
+            
+            if nargin < 3, expected_delay = 0; end
            
             import casadi.*
             
@@ -57,7 +59,8 @@ classdef NmpcControl < handle
             %Q = eye(nx);
             Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
             cost =0;
-
+            % Q = eye(nx);
+            % R = eye(nu);
             % input constraints
             M_ona = [1 0 0 0;-1 0 0 0;0 1 0 0; 0 -1 0 0; 0 0 1 0; 0 0 -1 0; 0 0 0 1; 0 0 0 -1];
             %m_ona = [0.26 0.26 0.26 0.26 (80-56.666) -(50-56.66666) 20 20]';
@@ -155,7 +158,7 @@ classdef NmpcControl < handle
             % For box constraints on state and input, overwrite entries of
             % lbx, ubx, lbu, ubu defined above
             
-            expected_delay = 0;
+           
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

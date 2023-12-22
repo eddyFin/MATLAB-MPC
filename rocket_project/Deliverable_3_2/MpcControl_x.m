@@ -42,9 +42,9 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            Q = 0.01*eye(4);
+            Q = eye(4);
+            R = 100;
 
-            R = 1;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;0.1745;Inf;Inf];

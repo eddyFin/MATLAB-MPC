@@ -1,0 +1,19 @@
+Un primo approccio naive è stato un tuning manuale delle matrici Q ed R senza l'utilizzo dei soft constraints.
+
+-tuning matrices si ragggiunge buoni risultati
+guardando i grafici cambiavamo le entrate specifiche delle matrici
+
+
+avere Q grandi sulle w mi fa evitare manovre aggressive, ma siccome voglio fargli seguire traiettoria non lineare con un monte di angoli diminuisco le Q relative alle velocità angolari.
+
+cambiando i pesi di Q su le omega si sminchiano gli input d1 e d2 allora abbiamo cambiato i pesi su R e abbiamo rimesso tutto apposto
+
+Analizzando i plot del track sui 3 piani x y z i tondini sono evidenti in tutti i piani che comprendono la z (no piano x y))--> dovuto alla variazione di quota quindi permettiamo una variazionedi Pavg ancora piu grande.
+
+
+
+We added soft constraints over the various state and input variables that had a constraint that could be softened: constrain on alfa and beta was due to linearization so it is violable of a small amount, the one on Pavg because it is not a physical limit (In fact, the constraint on it was due to a preference of range of use of he motors to avoid salire e scendere troppo rapidamente but it was not the pysical limit of the actuators. In order to achieve more precise trajectories we can let the system to violate a little bit Pavg constraint. ). Anyway we added a strict constraint (i.e. without slack variables) on Pavg to strict it into the range 0-100\%.  We used the single optimization problem formulation integrating a  cost function for epsilon and adding the necessary modifications to the constraints.
+
+ORA ABBIAMO SOLO QUADTRATICO E ANCHE IL LINEARE SOLO SULLA Z
+We use linear cost + quadratic cost for the soft constraints because we already have good tuning matrices so the error are never to big, linear cost penalizes small distances. quadratic cost instead blabkla aggiungi quello che fa il quadratico che penalizza grandi distanze
+Note that in quadratic cost if S is big we do not exit too much from constraints but violation could be long. In linear, if s is big it is the contrary, we risk to violate f a bi quantity but for small time. Since we do have the physical limits 0-100 we want to avoid Pavg to go to unreaalistic values such as 150--> we set big S and small s ALLA FINE s = 0 QUIND NO LINEARE.

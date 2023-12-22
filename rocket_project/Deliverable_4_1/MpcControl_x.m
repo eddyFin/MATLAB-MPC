@@ -42,7 +42,8 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % soft constraints variables
-            S = 0.0000001*eye(2);
+            %S = 0.0000001*eye(2);
+            S = 1e7*eye(2);
             s = 0;
             epsilon = sdpvar(size(F,1),N-1);
             
@@ -51,7 +52,7 @@ classdef MpcControl_x < MpcControlBase
             Q(1,1) = 100;
             Q(4,4) = 1000;
 
-            R = 1;
+            R = 10;
             % Q = diag([35, 1, 1,  10]);
             % R = 1; %d2
             sys = LTISystem('A',mpc.A,'B',mpc.B);
@@ -121,10 +122,10 @@ classdef MpcControl_x < MpcControlBase
 
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
-            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
 
             % title('Projection of terminal set on 1st and 2nd dimensions')
             % Xf.projection(1:2).plot();

@@ -44,7 +44,8 @@ classdef MpcControl_y < MpcControlBase
             m = [0.26; 0.26];
 
             % soft constraints variables
-            S = 0.000001*eye(2);
+            %S = 0.000001*eye(2);
+            S = 1e7*eye(2);
             s = 0;
             epsilon = sdpvar(size(F,1),N-1);
 
@@ -83,10 +84,10 @@ classdef MpcControl_y < MpcControlBase
 
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
-                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
-            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

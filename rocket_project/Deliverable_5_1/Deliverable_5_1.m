@@ -36,11 +36,11 @@ ref = [1.2, 0, 3, 0]';
 Tf = 8;
 % Manipulate mass for simulation
 rocket.mass = 2.13;
-% [T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);
-% 
-% % Visualize
-% rocket.anim_rate = 20; % Increase this to make the animation faster
-% ph = rocket.plotvis(T, X, U, Ref);
+[T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);
+
+% Visualize
+rocket.anim_rate = 20; % Increase this to make the animation faster
+ph = rocket.plotvis(T, X, U, Ref);
 
 [T, X, U, Ref, Z_hat] = rocket.simulate_est_z(x0, Tf, @mpc.get_u, ref, mpc_z, sys_z);
 

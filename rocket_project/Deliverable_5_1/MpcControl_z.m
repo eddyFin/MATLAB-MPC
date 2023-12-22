@@ -208,7 +208,9 @@ classdef MpcControl_z < MpcControlBase
             A_bar = [mpc.A Bd; zeros(m,n) eye(m)];
             B_bar = [mpc.B; zeros(m)];
             C_bar = [mpc.C Cd];
-            L = (-place(A_bar',C_bar', [0.5 0.6 0.7]*0.7))';
+            %poles = [0.90 0.95 0.97]';
+             poles = [0.3500    0.4200    0.4900]';
+            L = (-place(A_bar',C_bar', poles))';
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

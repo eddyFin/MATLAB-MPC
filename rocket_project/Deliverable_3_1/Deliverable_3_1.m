@@ -23,7 +23,7 @@ sys = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
 
 %% TODO 3.1 Design MPC controller X
-H = 6; % Horizon length in seconds
+H = 1; % Horizon length in seconds
 
 mpc_x = MpcControl_x(sys_x, Ts, H);
 % Get control input ( x is the index of the subsystem here)
@@ -44,7 +44,7 @@ Tf = 10;
 ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us);
 
 %% TODO 3.1 Design MPC controller Y
-H = 6; % Horizon length in seconds
+H = 1; % Horizon length in seconds
 mpc_y = MpcControl_y(sys_y, Ts, H);
 % Get control input ( x is the index of the subsystem here)
 x_y = [0 0 0 3]'; % (wx, alpha, vy, y) Initial state
@@ -66,7 +66,7 @@ Tf = 10;
 ph = rocket.plotvis_sub(T, Y_sub, U_sub, sys_y, xs, us);
 
 %% TODO 3.1 Design MPC controller Z
-H = 6; % Horizon length in seconds
+H = 1; % Horizon length in seconds
 mpc_z = MpcControl_z(sys_z, Ts, H);
 % Get control input ( x is the index of the subsystem here)
 x_z = [0 3]'; % (vz, z) Initial state
@@ -90,7 +90,7 @@ ph = rocket.plotvis_sub(T, Z_sub, U_sub, sys_z, xs, us);
 
 
 %% TODO 3.1 Design MPC controller roll
-H = 6; % Horizon length in seconds
+H = 1; % Horizon length in seconds
 mpc_roll = MpcControl_roll(sys_roll, Ts, H);
 % Get control input ( x is the index of the subsystem here)
 x_roll = [0 deg2rad(30)]'; % (wz, gamma) Initial state

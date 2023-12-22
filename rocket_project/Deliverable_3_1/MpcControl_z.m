@@ -60,8 +60,10 @@ classdef MpcControl_z < MpcControlBase
             
             % matrices
             Q = [20 0; 0 20];
-
             R = 1;
+          
+
+          
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];
@@ -90,16 +92,9 @@ classdef MpcControl_z < MpcControlBase
             con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
             obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
             
-            %plot(Xf)
+            %plot(Xf, 'color','r')
 
-            %title('Projection of terminal set on 1st and 2nd dimensions')
-            %Xf.projection(1:2).plot();
-            
-            %title('Projection of terminal set on 2nd and 3rd dimensions')
-            %Xf.projection(2:3).plot();
-            
-            %title('Projection of terminal set on 3rd and 4th dimensions')
-            %Xf.projection(3:4).plot();
+           
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

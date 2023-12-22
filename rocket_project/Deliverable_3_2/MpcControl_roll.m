@@ -44,8 +44,8 @@ classdef MpcControl_roll < MpcControlBase
             
             % matrices
             Q = 50*eye(2);
-
             R = 0.1;
+            
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];

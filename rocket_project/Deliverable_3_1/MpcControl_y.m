@@ -44,9 +44,12 @@ classdef MpcControl_y < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            Q = 0.0001*eye(4);
+            % Q = 0.0001*eye(4);
+            % R = 1;
 
-            R = 1;
+            Q = eye(4);
+            R = 100;
+
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;0.1745;Inf;Inf];
@@ -60,6 +63,15 @@ classdef MpcControl_y < MpcControlBase
             Xf = sys.LQRSet;
             %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
+            % %title('Projection of terminal set on 1st and 2nd dimensions')
+            % Xf.projection(1:2).plot('color', 'g');
+            % 
+            % %title('Projection of terminal set on 2nd and 3rd dimensions')
+            % Xf.projection(2:3).plot('color', 'g');
+            % 
+            % %title('Projection of terminal set on 3rd and 4th dimensions')
+            % Xf.projection(3:4).plot('color', 'g');
+
             Ff = double(Xf.A);
             ff = double(Xf.b);
 

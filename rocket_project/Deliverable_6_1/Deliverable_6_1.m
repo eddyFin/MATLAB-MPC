@@ -33,6 +33,14 @@ x = zeros(12,1);
 U_opt(:,end+1) = nan;
 ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
 
+% Closed loop trajectory
+Tf = 10;
+[T, X, U, Ref] = rocket.simulate(x, Tf, @nmpc.get_u, ref);
+
+% Visualize
+rocket.anim_rate = 20; % Increase this to make the animation faster
+ph = rocket.plotvis(T, X, U, Ref);
+
 %%
 Tf =30;
 % MPC reference with default maximum roll = 15 deg

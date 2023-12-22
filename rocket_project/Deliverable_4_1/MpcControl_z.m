@@ -61,7 +61,8 @@ classdef MpcControl_z < MpcControlBase
             M1 = [1;-1];
             m1 = [100- Us; -(0 - Us)];
             % soft constraints variables
-            S = 100*eye(2);
+            %S = 100*eye(2);
+            S = 1e7*eye(2);
             s = 0;
             epsilon = sdpvar(size(M,1),N-1);
 
@@ -70,7 +71,7 @@ classdef MpcControl_z < MpcControlBase
 
             R = 0.001;
             %Q = diag([1, 10]);
-            %R = 0.1; 
+            R = 10; 
             %R = 0.01;
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
@@ -98,10 +99,10 @@ classdef MpcControl_z < MpcControlBase
                 con = [con, M*U(:,i) <= m+ epsilon(:,i)]; % Input constraints
                 con = [con, M1*U(:,i) <= m1]; % Input constraints
                 
-                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i)+s*norm(epsilon(:,i),1); % Cost function
+                obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
-            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1)+s*norm(epsilon(:,N-1),1); % Terminal weight
+            obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
             
             %plot(Xf)
 

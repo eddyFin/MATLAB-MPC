@@ -59,7 +59,7 @@ classdef NmpcControl < handle
             %R = diag([1 1 0.0015 1]);
             
             %Q = eye(nx);
-            %         wx wy wz a b g   vx vy vz x    y    z
+            %         wx wy wz a b gammavx vy  vz  x    y    z
             Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
             cost =0;
 

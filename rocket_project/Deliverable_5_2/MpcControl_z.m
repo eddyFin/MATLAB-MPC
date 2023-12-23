@@ -64,6 +64,7 @@ classdef MpcControl_z < MpcControlBase
             % matrices
             Q = [1000 0; 0 10000];
             
+            
             R = 0.001;
             %R = 1000;
             

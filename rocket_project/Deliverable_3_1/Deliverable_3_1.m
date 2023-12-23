@@ -8,6 +8,7 @@ clc
 Ts = 1/20;
 rocket = Rocket(Ts);
 
+
 %% Linearization around trim point
 rocket = Rocket(Ts);
 [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)

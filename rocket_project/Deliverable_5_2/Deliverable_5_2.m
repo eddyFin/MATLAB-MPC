@@ -18,7 +18,7 @@ sys = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
 %Decomposition into subsystems
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
 
-H = 7; % Horizon length in seconds
+H = 2; % Horizon length in seconds
 
 
 mpc_x = MpcControl_x(sys_x, Ts, H);

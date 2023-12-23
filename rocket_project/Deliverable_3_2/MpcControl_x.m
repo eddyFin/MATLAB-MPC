@@ -42,8 +42,11 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            Q = eye(4);
-            R = 100;
+            % Q = eye(4);
+            % R = 100;
+
+            Q = 0.0001*eye(4);
+            R = 1;
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 

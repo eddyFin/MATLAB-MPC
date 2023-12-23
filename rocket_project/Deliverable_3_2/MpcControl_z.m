@@ -61,6 +61,8 @@ classdef MpcControl_z < MpcControlBase
             % matrices
             Q = 20*eye(2);
             R = 1;
+            % Q = 3.5*eye(2);
+            % R = 1;
             
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -87,7 +89,7 @@ classdef MpcControl_z < MpcControlBase
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            % con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
             
             %plot(Xf)

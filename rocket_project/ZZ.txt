@@ -17,3 +17,44 @@ We added soft constraints over the various state and input variables that had a 
 ORA ABBIAMO SOLO QUADTRATICO E ANCHE IL LINEARE SOLO SULLA Z
 We use linear cost + quadratic cost for the soft constraints because we already have good tuning matrices so the error are never to big, linear cost penalizes small distances. quadratic cost instead blabkla aggiungi quello che fa il quadratico che penalizza grandi distanze
 Note that in quadratic cost if S is big we do not exit too much from constraints but violation could be long. In linear, if s is big it is the contrary, we risk to violate f a bi quantity but for small time. Since we do have the physical limits 0-100 we want to avoid Pavg to go to unreaalistic values such as 150--> we set big S and small s ALLA FINE s = 0 QUIND NO LINEARE.
+
+
+
+
+
+
+
+---------------------------------
+Perche la massa vera è inferiore a quella su cui è stato fatto l osservatore e quindi il controllore risponde con un input superiore a quello realmente necessario.
+Per rimediare dobbiamo implementare il disturbance estimator di multivariable. bisogna fare lo stato aumentato e poi design di  L basato su (Abar, Cbar) definite come a multivariable. In pratica bisogna creare il modello del generatore di disturbo, fare lo stato aumentato e riscrivere le equazioni di sstato con il nuovo stato aumeentato. Anche perche noi sappiao come è fatto il disturbance generator perchè sappiamo come la massa diminuisce in base al tempo (non lo sappiamo benissimo ma sappiamo che diminuisce ). 
+
+
+------------------------------------------------
+1)Il controllore si aspetta una massa di 1.7 mentre noi partiamo da una massa di 2.3: -->primo tratto il rocket scende perchè gli do una potenza minore di quella che gli servirebbe. accelerazione negativa
+
+2) Siccome ho la massa che varia e che diminuisce ci sarà un punto in cui la massa è davvero a 1.7 --> quota stabile istantaneamente e cuspide sulla velocità e allora l'input del controllore è giusto. Da qua in poi il rocket risale perchè l'input è maggiore del dovuto visto che la massa è sempre minore. come si vede nella figura sotto
+
+per capire il punto in CUI LA MASSA è UGUALE  è quello in cui l'accelerazione varia ovvero quello in cui la derivata della velocità vx ha un cambiamento repentino--> dal grafico si vede che è 0.01 s tipo.
+
+
+Per fare questa parte simula per 20 s
+
+CASO NO OBSERVER
+
+-continua a salire finchè ha fuel. che viene finito verso 13 s (picco della velocità). a quel punto la velocità inizia a scendere (rocket ha inerzia quindi il max dell'altezza lo raggiunge un po dopo i 13 s). Velocità diminuisce linearmente perchè l accelerazione g è costante; z dimnuisce quadraticamente di conseguenza. 
+- \textbf{Pavg}. Prima cosa si blocca a 50 perchè è il limite inferiore di saturazione. In realtà non è vero che il motore per tutto questo tempo sta fornendo pavg = 50, mentre il controllore sì perchè non sa che sta finendo/ha finito il carburante. Poi arriva il momento in cui la velocità vz diventa troppo negativa  e z andrebbe sotto il riferimento e per questo il controllore vorrebbe saturare al massimo la Pavg per riportarlo su non sapendo che ha finito il carburante. 
+
+Si blocca qualche secondo dopo aver saturato a 80 perchè velocità e posizione vanno a valori eccessivamente lontani da quelli della linearizzazione e il problema mpc non puo essere risolto.
+
+\textbf{Metti simulazione caso in cui il limite inferiore è a 50 senza observer}
+
+In realtà se la massa diminuisce non ha piu senso che il vincolo inferiore sia a 50 ma puo scendere e noi lo impostiamo a 0. Se mettiamo il vincolo inferiore a 30 vediamo che Pavg arriva a un minimo di circa 35.  La benzina finisce a 15.6s e la potenza erogata è piu bassa del limite (sotto 50) ma non crolla a zero. Alla fine decidiamo di lasciare 50 perchè tanto il controllore è cieco al fatto che non ci sia più fuel. 
+
+
+CASO OBSERVER
+
+La simulazione si interrompe a circa 6s. Nonostante ciò, il carburante non è ancora finito. Questo è dovuto al vincolo inferiore di Pavg.
+
+invece tipo a 8-9 s fine benza. massa arriva al suo minimo
+
+quello che non capiamo è perchè quando finisce la benza Pavg nel grafico rimane uguale. Pensiamo sia dovut a come funzioni a cui non abbiamo accesso fanno plot. Normalmene ci aspetteremmo che a 8-9 s la Pavg vada a 0.

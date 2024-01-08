@@ -35,6 +35,7 @@ classdef MpcControl_y < MpcControlBase
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
+
             % state constraints
             F = [0 1 0 0; 0 -1 0 0];
             f = [0.1745; 0.1745]; %rad
@@ -44,9 +45,8 @@ classdef MpcControl_y < MpcControlBase
             m = [0.26; 0.26];
 
             % soft constraints variables
-            %S = 0.000001*eye(2);
-            S = 1e7*eye(2);
-            s = 0;
+            S = 0.000001*eye(2);
+          
             epsilon = sdpvar(size(F,1),N-1);
 
             % matrices
@@ -55,8 +55,6 @@ classdef MpcControl_y < MpcControlBase
             Q(4,4) = 1000;
 
             R = 10;
-            % Q = diag([35, 1, 1,  10]);
-            % R = 1; %d2
             
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -69,8 +67,7 @@ classdef MpcControl_y < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            
+           
             Ff = double(Xf.A);
             ff = double(Xf.b);
 
@@ -88,6 +85,7 @@ classdef MpcControl_y < MpcControlBase
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
+           
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -125,8 +123,6 @@ classdef MpcControl_y < MpcControlBase
              
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
-
             Q_sigma = 0.01*eye(4);
 
             R_sigma = 1;
@@ -156,8 +152,8 @@ classdef MpcControl_y < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                            F*xs<=f,
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
             end
+            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

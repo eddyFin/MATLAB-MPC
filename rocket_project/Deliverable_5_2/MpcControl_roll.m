@@ -104,8 +104,6 @@ classdef MpcControl_roll < MpcControlBase
 
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
-
             Q_sigma = 0.01*eye(2);
 
             R_sigma = 1;
@@ -131,7 +129,6 @@ classdef MpcControl_roll < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                           
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
             end
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

@@ -35,6 +35,7 @@ classdef MpcControl_y < MpcControlBase
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
+
             % state constraints
             F = [0 1 0 0; 0 -1 0 0];
             f = [0.1745; 0.1745]; %rad
@@ -73,6 +74,7 @@ classdef MpcControl_y < MpcControlBase
             end
             
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -110,8 +112,6 @@ classdef MpcControl_y < MpcControlBase
              
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
-
             Q_sigma = 0.01*eye(4);
 
             R_sigma = 1;
@@ -141,8 +141,9 @@ classdef MpcControl_y < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                            F*xs<=f,
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
+               
             end
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

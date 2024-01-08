@@ -49,7 +49,6 @@ classdef MpcControl_x < MpcControlBase
             R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
@@ -64,7 +63,6 @@ classdef MpcControl_x < MpcControlBase
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
                 if i~=1
                     con = [con, F*(X(:,i)) <= f]; % State constraints
-
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
@@ -112,7 +110,6 @@ classdef MpcControl_x < MpcControlBase
              
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
 
             Q_sigma = 0.01*eye(4);
 
@@ -142,8 +139,7 @@ classdef MpcControl_x < MpcControlBase
                 obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
                 con = [xs == mpc.A*xs + mpc.B*us,
                            F*xs<=f,
-                           M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
+                           M*us<= m]; 
             end
             
             

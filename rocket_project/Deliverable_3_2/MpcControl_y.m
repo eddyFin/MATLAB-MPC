@@ -35,6 +35,7 @@ classdef MpcControl_y < MpcControlBase
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
+
             % state constraints
             F = [0 1 0 0; 0 -1 0 0];
             f = [0.1745; 0.1745]; %rad
@@ -44,11 +45,6 @@ classdef MpcControl_y < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            % Q = 0.0001*eye(4);
-            % R = 1;
-
-            % Q = eye(4);
-            % R = 100;
 
              Q = 0.0001*eye(4);
              R = 1;
@@ -64,7 +60,6 @@ classdef MpcControl_y < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
             Ff = double(Xf.A);
             ff = double(Xf.b);
@@ -76,13 +71,13 @@ classdef MpcControl_y < MpcControlBase
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
                 if i~=1
                     con = [con, F*(X(:,i)) <= f]; % State constraints
-
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -120,8 +115,6 @@ classdef MpcControl_y < MpcControlBase
              
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
-
             Q_sigma = 0.01*eye(4);
 
             R_sigma = 1;
@@ -151,8 +144,8 @@ classdef MpcControl_y < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                            F*xs<=f,
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
             end
+            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

@@ -42,9 +42,6 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            % Q = eye(4);
-            % R = 100;
-
             Q = 0.0001*eye(4);
             R = 1;
 
@@ -59,8 +56,7 @@ classdef MpcControl_x < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            % [~, Qf_2, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            % assert(all(Qf-Qf_2<1e-6))
+
             Ff = double(Xf.A);
             ff = double(Xf.b);
 
@@ -80,14 +76,7 @@ classdef MpcControl_x < MpcControlBase
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
 
-            % title('Projection of terminal set on 1st and 2nd dimensions')
-            % Xf.projection(1:2).plot();
-            % 
-            % title('Projection of terminal set on 2nd and 3rd dimensions')
-            % Xf.projection(2:3).plot();
-            % 
-            % title('Projection of terminal set on 3rd and 4th dimensions')
-            % Xf.projection(3:4).plot();
+           
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -127,8 +116,6 @@ classdef MpcControl_x < MpcControlBase
              
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
-
             Q_sigma = 0.01*eye(4);
 
             R_sigma = 1;
@@ -148,6 +135,7 @@ classdef MpcControl_x < MpcControlBase
             con = [Sigma*[xs;us]==B_Sigma,
                            F*xs<=f,
                            M*us<= m];
+
             diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
             double(xs)
             
@@ -158,7 +146,6 @@ classdef MpcControl_x < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                            F*xs<=f,
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
             end
             
             

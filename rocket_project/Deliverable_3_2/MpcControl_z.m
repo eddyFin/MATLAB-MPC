@@ -61,8 +61,7 @@ classdef MpcControl_z < MpcControlBase
             % matrices
             Q = 20*eye(2);
             R = 1;
-            % Q = 3.5*eye(2);
-            % R = 1;
+
             
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -75,7 +74,6 @@ classdef MpcControl_z < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
             Ff = double(Xf.A);
             ff = double(Xf.b);
@@ -85,23 +83,12 @@ classdef MpcControl_z < MpcControlBase
 
             for i = 1:N-1
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
-                
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            % con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
             
-            %plot(Xf)
-
-            %title('Projection of terminal set on 1st and 2nd dimensions')
-            %Xf.projection(1:2).plot();
-            
-            %title('Projection of terminal set on 2nd and 3rd dimensions')
-            %Xf.projection(2:3).plot();
-            
-            %title('Projection of terminal set on 3rd and 4th dimensions')
-            %Xf.projection(3:4).plot();
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -143,8 +130,6 @@ classdef MpcControl_z < MpcControlBase
 
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
 
-           
-
             Q_sigma = 0.01*eye(2);
 
             R_sigma = 1;
@@ -158,8 +143,7 @@ classdef MpcControl_z < MpcControlBase
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
             
-            con = [Sigma*[xs;us]==B_Sigma,
-                           
+            con = [Sigma*[xs;us]==B_Sigma,          
                            M*us<= m];
             diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
             double(xs)
@@ -169,10 +153,10 @@ classdef MpcControl_z < MpcControlBase
                 % closest to ref
                 obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
                 con = [xs == mpc.A*xs + mpc.B*us,
-                          
                            M*us<= m];
-                %solvesdp(con,obj,sdpsettings('verbose',0));
+         
             end
+            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             
             

@@ -26,7 +26,7 @@ classdef NmpcControl < handle
         function obj = NmpcControl(rocket, tf, expected_delay)
             
             if nargin < 3, expected_delay = 0; end
-           
+
             import casadi.*
             
             N_segs = ceil(tf/rocket.Ts); % MPC horizon
@@ -51,40 +51,28 @@ classdef NmpcControl < handle
             
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
-            
-            % Cost
-            %R = eye(nu);
-            %R = diag([0.0001 0.0001 1.5 0.0001]);
-            R = diag([0.001 0.001 1.5 0.0001]);
-            %Q = eye(nx);
-            Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
-            cost =0;
-            % Q = eye(nx);
-            R = diag([1000 1000 1.5 0.0001]);
-            % 
-            % Q = eye(nx);
-            % R = eye(nu);
+    
+  
+            cost = 0;
+           
+
+             Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
+             R = diag([1000 1000 1.5 0.0001]);
+
 
             % input constraints
             M_ona = [1 0 0 0;-1 0 0 0;0 1 0 0; 0 -1 0 0; 0 0 1 0; 0 0 -1 0; 0 0 0 1; 0 0 0 -1];
-            %m_ona = [0.26 0.26 0.26 0.26 (80-56.666) -(50-56.66666) 20 20]';
             m_ona = [0.26 0.26 0.26 0.26 (80) -(50) 20 20]';
             
             % state constraints
             F_ona = zeros(2*nx,nx);
-            %F_ona(7,4) = 1;
-            %F_ona(8,4) = -1;
             F_ona(9,5) = 1;
             F_ona(10,5) = -1;
             f_ona = zeros(2*nx,1);
-            %f_ona(7,1) = 0.1745;
-            %f_ona(8,1)  = 0.1745;
             f_ona(9,1) =deg2rad(75);
-            f_ona(10,1) = deg2rad(75);
-            
+            f_ona(10,1) = deg2rad(75);          
             ubx(5,1) = deg2rad(75);
             lbx(5,1) = deg2rad(-75);
-            
             ubu = m_ona(1:2:end);
             lbu = -m_ona(2:2:end);
 
@@ -95,38 +83,21 @@ classdef NmpcControl < handle
             [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
             sys2 = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
             sys = LTISystem('A',sys2.A,'B',sys2.B);
-            sys.x.max = [Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf]' -xs; %check
-            sys.x.min = -[Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf]' -xs; %check
-            %sys.u.max = m_ona(1:2:end);
+
+            sys.x.max = [Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf]' -xs; 
+            sys.x.min = -[Inf, Inf, Inf, Inf, deg2rad(75), Inf, Inf, Inf, Inf, Inf, Inf,Inf]' -xs; 
+            
             sys.u.max = [0.26 0.26 (80) 20 ]'-us;
-            %sys.u.min = -m_ona(2:2:end);
             sys.u.min = -[0.26  0.26  -(50) 20]'-us;
+
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
-            % Xf = sys.LQRSet;
-            % Ff = double(Xf.A);
-            % ff = double(Xf.b);
+
             Qf = sys.LQRPenalty.weight;
-            % eq_constr = [];
-            % ineq_constr = [];
-            % ineq_constr1 = [];
-            % for k = 1:N-1
-            %     cost = cost+ X_sym(:,k)'*Q*X_sym(:,k)+U_sym(:,k)'*R*U_sym(:,k);
-            %     % Equality constraints (Casadi SX), each entry == 0
-            %     eq_constr = [ eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k)) ];
-            %     % Inequality constraints (Casadi SX), each entry <= 0
-            %     ineq_constr = [ ineq_constr; M_ona*U_sym(:,k) - m_ona ];
-            %     ineq_constr1  = [ ineq_constr1; F_ona*X_sym(:,k) -f_ona ];
-            % end
-            % ineq_constr3 = [ineq_constr; ineq_constr1];
-            % cost = cost+X_sym(:,end)'*Q*X_sym(:,end);
-            % ineq_constr = [ineq_constr;Ff*X_sym(:,end) -ff ];
 
             x_ref = [zeros(5,1);ref_sym(4,1);zeros(3,1);ref_sym(1:3,1)];
-            % % Parameters (symbolic)
-            % x_ref  = SX.sym('x_ref', nx, 1);  % initial state
-            % u_ref = SX.sym('u_ref', nu, 1);  % target position
-            %u_ref = us;
+
+            u_ref = us;
 
             % Initialize constraints matrices
             eq_constr = [X_sym(:, 1)-x0_sym];
@@ -135,13 +106,14 @@ classdef NmpcControl < handle
             
             for k = 1:N-1
                 % Cost function update (assuming cost is defined earlier)
-                cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + U_sym(:,k)'*R*U_sym(:,k);
-                %cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k)-u_ref)'*R*(U_sym(:,k)-u_ref);
+                
+                cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k)-u_ref)'*R*(U_sym(:,k)-u_ref);
 
                 % Equality constraints
                 eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
-                %eq_constr = [eq_constr; X_sym(:, k+1) - rocket.f(X_sym(:,k),U_sym(:,k))];
+                
                 % Inequality constraints
+                
             end
             
             % Combine inequality constraints
@@ -149,27 +121,12 @@ classdef NmpcControl < handle
             
             % Terminal cost and constraints
             cost = cost + (X_sym(:,end)-x_ref)'*Qf*(X_sym(:,end)-x_ref);
-            %cost = cost + (X_sym(:,end)-x_ref)'*Q*(X_sym(:,end)-x_ref);
-            %ineq_constr = [ineq_constr; Ff*(X_sym(:,end)-x_ref) - ff];
-            
-            % % Steady state constraints
-            % ineq_constr = [ineq_constr; M_ona*u_ref- m_ona; F_ona*x_ref - f_ona];
-            % eq_constr = [eq_constr; x_ref - f_discrete(x_ref,u_ref)];
-            
-            
-            
 
-            % For box constraints on state and input, overwrite entries of
-            % lbx, ubx, lbu, ubu defined above
-            
-           
-            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             % ---- Assemble NLP ------
             nlp_x = [X_sym(:); U_sym(:)];
-            %nlp_x = [X_sym(:); U_sym(:); x_ref(:); u_ref(:)];
             nlp_p = [x0_sym; ref_sym];
             nlp_f = cost;
             nlp_g = [eq_constr; ineq_constr];
@@ -178,7 +135,6 @@ classdef NmpcControl < handle
             
             % ---- Setup solver ------
             opts = struct('ipopt', struct('print_level', 0), 'print_time', false);
-            %opts = struct('ipopt', struct('print_level', 0), 'print_time', false, 'allow_free', true);
             obj.solver = nlpsol('solver', 'ipopt', nlp, opts);
             
             % ---- Assemble NLP bounds ----
@@ -210,8 +166,9 @@ classdef NmpcControl < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
 
-            u_init = zeros(4, 1); % Replace this by a better initialization
-            u_init(3) = 56.666667; 
+            u_init = zeros(4, 1); 
+            u_init(3) = 56.666667;
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             obj.mem_u = repmat(u_init, 1, expected_delay);
@@ -227,16 +184,14 @@ classdef NmpcControl < handle
             % Delay compensation: Predict x0 delay timesteps later.
             % Simulate x_ for 'delay' timesteps
             x_ = x0;
-            
-           
-            %Ts = 1/40;
+
             Ts = obj.rocket.Ts;
             for k = 1: delay
                 x_ = x_ + Ts*obj.rocket.f(x_, obj.mem_u(:,k));
             end
             
 
-            x0 = x_; %ADESSO QUELLO CHE PRIMA ERA X0 è X(DELAY) E LO USO AL POSTO DI X0
+            x0 = x_;
 
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

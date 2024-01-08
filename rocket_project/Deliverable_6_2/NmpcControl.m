@@ -229,7 +229,8 @@ classdef NmpcControl < handle
             x_ = x0;
             
            
-            Ts = 1/40;
+            %Ts = 1/40;
+            Ts = obj.rocket.Ts;
             for k = 1: delay
                 x_ = x_ + Ts*obj.rocket.f(x_, obj.mem_u(:,k));
             end

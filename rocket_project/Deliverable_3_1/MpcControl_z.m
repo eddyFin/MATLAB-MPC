@@ -61,9 +61,7 @@ classdef MpcControl_z < MpcControlBase
             % matrices
             Q = [20 0; 0 20];
             R = 1;
-          
 
-          
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
             sys.x.max = [Inf;Inf];
@@ -75,7 +73,6 @@ classdef MpcControl_z < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
             Ff = double(Xf.A);
             ff = double(Xf.b);
@@ -85,14 +82,13 @@ classdef MpcControl_z < MpcControlBase
 
             for i = 1:N-1
                 con = [con, X(:,i+1) == mpc.A*X(:,i) + mpc.B*U(:,i)]; % System dynamics
-               
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + X(:,i)'*Q*X(:,i) + U(:,i)'*R*U(:,i); % Cost function
             end
             con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
             obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
             
-            %plot(Xf, 'color','r')
+            %plot(Xf, 'color','b')
 
            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

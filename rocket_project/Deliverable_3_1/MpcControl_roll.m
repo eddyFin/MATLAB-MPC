@@ -35,6 +35,7 @@ classdef MpcControl_roll < MpcControlBase
             % SET THE PROBLEM CONSTRAINTS con AND THE OBJECTIVE obj HERE
             obj = 0;
             con = [];
+
             % state constraints
             %none 
 
@@ -45,7 +46,6 @@ classdef MpcControl_roll < MpcControlBase
             % matrices
             Q = 10*eye(2);
             R = 0.1;
-
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -58,17 +58,6 @@ classdef MpcControl_roll < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-
-            %plot(Xf,'color','y');
-            % % title('Projection of terminal set on 1st and 2nd dimensions')
-            % Xf.projection(1:2).plot();
-            % % 
-            % % title('Projection of terminal set on 2nd and 3rd dimensions')
-            % Xf.projection(2:3).plot();
-            % % 
-            % % title('Projection of terminal set on 3rd and 4th dimensions')
-            % Xf.projection(3:4).plot();
             
             Ff = double(Xf.A);
             ff = double(Xf.b);
@@ -83,6 +72,9 @@ classdef MpcControl_roll < MpcControlBase
             end
             con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
             obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
+
+            %plot(Xf, 'color','y')
+
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

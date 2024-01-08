@@ -4,20 +4,27 @@ close all
 clear all
 clc
 
-%% 
+%% TODO: This file should produce all the plots for the deliverable
 Ts = 1/20;
 rocket = Rocket(Ts);
 Tf = 10;
 H = 7;
+
 %% Linearization around trim point
 rocket = Rocket(Ts);
 [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
 sys = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
+
+
 %% Decomposition into subsystems
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
+
 %%  3.1 Design MPC controller X
+
 mpc_x = MpcControl_x(sys_x, Ts, H);
-x_x = [0 0 0 3]'; % (wy, beta, vx, x) Initial state    
+
+x_x = [0 0 0 3]'; % (wy, beta, vx, x) Initial state
+    
 % Open−loop trajectory
 [~, T_opt, X_opt, U_opt] = mpc_x.get_u(x_x);
 U_opt(:,end+1) = NaN;
@@ -27,7 +34,7 @@ ph = rocket.plotvis_sub(T_opt, X_opt, U_opt, sys_x, xs, us);
 [T, X_sub, U_sub] = rocket.simulate_f(sys_x, x_x, Tf, @mpc_x.get_u, 0);
 ph = rocket.plotvis_sub(T, X_sub, U_sub, sys_x, xs, us);
 
-%% Design MPC controller Y
+%% TODO 3.1 Design MPC controller Y
 mpc_y = MpcControl_y(sys_y, Ts, H);
 
 x_y = [0 0 0 3]'; % (wx, alpha, vy, y) Initial state
@@ -76,5 +83,6 @@ U_opt(:,end+1) = NaN;
 % Plot the open loop trajectory
 ph = rocket.plotvis_sub(T_opt, Gamma_opt, U_opt, sys_roll, xs, us); 
 %% Receiding horizon approach for computing the closed loop trajectory:
+Tf = 10;
 [T, Gamma_sub, U_sub] = rocket.simulate_f(sys_roll, x_roll, Tf, @mpc_roll.get_u, 0);
 ph = rocket.plotvis_sub(T, Gamma_sub, U_sub, sys_roll, xs, us);

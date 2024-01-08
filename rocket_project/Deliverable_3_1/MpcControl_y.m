@@ -44,8 +44,6 @@ classdef MpcControl_y < MpcControlBase
             m = [0.26; 0.26];
             
             % matrices
-            % Q = 0.0001*eye(4);
-            % R = 1;
 
             Q = eye(4);
             R = 100;
@@ -61,7 +59,7 @@ classdef MpcControl_y < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
+           
             
             % %title('Projection of terminal set on 1st and 2nd dimensions')
             % Xf.projection(1:2).plot('color', 'g');
@@ -88,6 +86,7 @@ classdef MpcControl_y < MpcControlBase
             end
             con = [con, Ff*X(:,N) <= ff]; % Terminal constraint
             obj = obj + X(:,N)'*Qf*X(:,N); % Terminal weight
+            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             

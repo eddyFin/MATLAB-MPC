@@ -49,30 +49,22 @@ classdef MpcControl_roll < MpcControlBase
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            % sys.x.max = [Inf;Inf];
-            % sys.x.min = [-Inf;-Inf];
-            % sys.u.min = [-20];
-            % sys.u.max = [20];
+            
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            % Xf = sys.LQRSet;
-            % %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            % 
-            % Ff = double(Xf.A);
-            % ff = double(Xf.b);
+
 
             obj = 0;
             con = [];
 
             for i = 1:N-1
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
-                
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
+            
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
 
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
@@ -108,10 +100,7 @@ classdef MpcControl_roll < MpcControlBase
             obj = 0;
             con = [xs == 0, us == 0];
           
-
             Sigma = [eye(nx)-mpc.A, -mpc.B; mpc.C, zeros(size(mpc.C,1), size(mpc.B,2))];
-
-           
 
             Q_sigma = 0.01*eye(2);
 
@@ -138,7 +127,6 @@ classdef MpcControl_roll < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                           
                            M*us<= m];
-                solvesdp(con,obj,sdpsettings('verbose',0));
             end
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

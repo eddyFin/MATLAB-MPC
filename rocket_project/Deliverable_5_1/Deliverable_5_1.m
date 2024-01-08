@@ -4,22 +4,19 @@ close all
 clear all
 clc
 
-%% TODO: This file should produce all the plots for the deliverable
-
+%% This file should produce all the plots for the deliverable
 
 Ts = 1/20;
 rocket = Rocket(Ts);
-
+H = 7; % Horizon length in seconds
+Tf = 8;
 
 %% 
 [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
 sys = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point
 
-
 %Decomposition into subsystems
 [sys_x, sys_y, sys_z, sys_roll] = rocket.decompose(sys, xs, us);
-
-H = 10; % Horizon length in seconds
 
 
 mpc_x = MpcControl_x(sys_x, Ts, H);
@@ -33,7 +30,6 @@ mpc = rocket.merge_lin_controllers(xs, us, mpc_x, mpc_y, mpc_z, mpc_roll);
 
 x0 = [zeros(1, 9), 1 0 3]';
 ref = [1.2, 0, 3, 0]';
-Tf = 8;
 % Manipulate mass for simulation
 rocket.mass = 2.13;
 [T, X, U, Ref] = rocket.simulate(x0, Tf, @mpc.get_u, ref);

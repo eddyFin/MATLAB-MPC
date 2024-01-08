@@ -52,6 +52,7 @@ classdef MpcControl_z < MpcControlBase
 
           
             % state constraints
+
             %none
     
             % input constraints
@@ -65,19 +66,10 @@ classdef MpcControl_z < MpcControlBase
             R = 0.001;
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
-            % sys.x.max = [Inf;Inf];
-            % sys.x.min = [-Inf;-Inf];
-            % sys.u.min = [50];
-            % sys.u.max = [80];
             sys.x.penalty = QuadFunction(Q);
             sys.u.penalty = QuadFunction(R);
 
             Qf = sys.LQRPenalty.weight;
-            % Xf = sys.LQRSet;
-            % %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
-            % 
-            % Ff = double(Xf.A);
-            % ff = double(Xf.b);
 
             obj = 0;
             con = [];
@@ -87,19 +79,9 @@ classdef MpcControl_z < MpcControlBase
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            %con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
             
-            %plot(Xf)
-
-            %title('Projection of terminal set on 1st and 2nd dimensions')
-            %Xf.projection(1:2).plot();
-            
-            %title('Projection of terminal set on 2nd and 3rd dimensions')
-            %Xf.projection(2:3).plot();
-            
-            %title('Projection of terminal set on 3rd and 4th dimensions')
-            %Xf.projection(3:4).plot();
+           
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -152,7 +134,7 @@ classdef MpcControl_z < MpcControlBase
             
             obj = us'*R_sigma*us;
             
-             % input constraints
+            % input constraints
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
@@ -170,7 +152,7 @@ classdef MpcControl_z < MpcControlBase
                 con = [xs == mpc.A*xs + mpc.B*us,
                           
                            M*us<= m];
-                %solvesdp(con,obj,sdpsettings('verbose',0));
+                
             end
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             
@@ -194,10 +176,7 @@ classdef MpcControl_z < MpcControlBase
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             % You can use the matrices mpc.A, mpc.B, mpc.C and mpc.D
-            
-            % x+ = A * x +B * u +Bd * d
 
-            % I POLI VANNO POI TUNATI
 
             Bd = mpc.B;
             Cd = 0;
@@ -208,8 +187,8 @@ classdef MpcControl_z < MpcControlBase
             A_bar = [mpc.A Bd; zeros(m,n) eye(m)];
             B_bar = [mpc.B; zeros(m)];
             C_bar = [mpc.C Cd];
-            %poles = [0.90 0.95 0.97]';
-             poles = [0.3500    0.4200    0.4900]';
+            %poles = [0.90 0.95 0.97]'; 
+            poles = [0.3500    0.4200    0.4900]'; %poles giving better performance
             L = (-place(A_bar',C_bar', poles))';
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

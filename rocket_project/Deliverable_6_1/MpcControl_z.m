@@ -57,22 +57,20 @@ classdef MpcControl_z < MpcControlBase
             Us = 56.6666665401736;  % Steady state input
             M = [1; -1];
             m = [80 - Us; -(50 - Us)];
-            %m = [Inf; Inf];
+          
             M1 = [1;-1];
             m1 = [100- Us; -(0 - Us)];
+
             % soft constraints variables
             %S = 100*eye(2);
-            S = 1e7*eye(2);
-            s = 0;
+            S = 1e7;
+            
             epsilon = sdpvar(size(M,1),N-1);
 
             % matrices
             Q = [1000 0; 0 10000];
 
             R = 0.001;
-            %Q = diag([1, 10]);
-            R = 10; 
-            %R = 0.01;
 
             sys = LTISystem('A',mpc.A,'B',mpc.B);
 
@@ -85,7 +83,6 @@ classdef MpcControl_z < MpcControlBase
 
             Qf = sys.LQRPenalty.weight;
             Xf = sys.LQRSet;
-            %[~, Qf, ~] = dlqr(mpc.A, mpc.B, Q, R, H);
             
             Ff = double(Xf.A);
             ff = double(Xf.b);
@@ -104,16 +101,7 @@ classdef MpcControl_z < MpcControlBase
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
             
-            %plot(Xf)
-
-            %title('Projection of terminal set on 1st and 2nd dimensions')
-            %Xf.projection(1:2).plot();
-            
-            %title('Projection of terminal set on 2nd and 3rd dimensions')
-            %Xf.projection(2:3).plot();
-            
-            %title('Projection of terminal set on 3rd and 4th dimensions')
-            %Xf.projection(3:4).plot();
+           
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
@@ -181,9 +169,8 @@ classdef MpcControl_z < MpcControlBase
                 % closest to ref
                 obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
                 con = [xs == mpc.A*xs + mpc.B*us,
-                          
                            M*us<= m];
-                %solvesdp(con,obj,sdpsettings('verbose',0));
+               
             end
             
             

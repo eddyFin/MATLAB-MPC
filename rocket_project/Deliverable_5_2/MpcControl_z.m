@@ -145,9 +145,10 @@ classdef MpcControl_z < MpcControlBase
             
             con = [Sigma*[xs;us]==B_Sigma,
                            
-                           M*us<= m];
+                           %M*us<= m
+                           ];
             diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
-            double(xs)
+            
 
             if diagnostics.problem ~= 0
                 % no solution exists: compute reachable set point that is

@@ -79,6 +79,7 @@ classdef MpcControl_x < MpcControlBase
                 if i~=1
                  
                     con = [con, F*(X(:,i)) <= f + epsilon(:,i)]; % State constraints
+                    con = [con, epsilon(:,i)>=0];
 
                 end
                 con = [con, M*U(:,i) <= m]; % Input constraints
@@ -86,6 +87,7 @@ classdef MpcControl_x < MpcControlBase
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
+            con = [con, epsilon(:,N-1)>=0];
 
             
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE

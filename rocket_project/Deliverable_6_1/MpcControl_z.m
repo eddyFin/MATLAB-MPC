@@ -94,13 +94,14 @@ classdef MpcControl_z < MpcControlBase
                 con = [con, (X(:,i+1)) == mpc.A*(X(:,i)) + mpc.B*(U(:,i))]; % System dynamics
                 
                 con = [con, M*U(:,i) <= m+ epsilon(:,i)]; % Input constraints
+                con = [con, epsilon(:,i)>=0];
                 con = [con, M1*U(:,i) <= m1]; % Input constraints
                 
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref)+ epsilon(:,i)'*S*epsilon(:,i); % Cost function
             end
             con = [con, Ff*(X(:,N)-x_ref) <= ff]; % Terminal constraint
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref) + epsilon(:,N-1)'*S*epsilon(:,N-1); % Terminal weight
-            
+            con = [con, epsilon(:,N-1)>=0];
            
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

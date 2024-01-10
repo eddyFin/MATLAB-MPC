@@ -67,7 +67,7 @@ classdef MpcControl_x < MpcControlBase
                 con = [con, M*U(:,i) <= m]; % Input constraints
                 obj = obj + (X(:,i+1)-x_ref)'*Q*(X(:,i+1)-x_ref) + (U(:,i)-u_ref)'*R*(U(:,i)-u_ref); % Cost function
             end
-            
+            con = [con, F*(X(:,i)) <= f]; % State constraints
             obj = obj + (X(:,N)-x_ref)'*Qf*(X(:,N)-x_ref); % Terminal weight
 
             

@@ -111,7 +111,7 @@ classdef NmpcControl < handle
                 % Equality constraints
                 eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
                 
-                % Inequality constraints
+                
             end
             
             % Combine inequality constraints

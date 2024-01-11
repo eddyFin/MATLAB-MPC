@@ -42,7 +42,6 @@ classdef MpcControl_x < MpcControlBase
             m = [0.26; 0.26];
             
             % soft constraints variables
-            %S = 0.0000001*eye(2);
             S = 1e7;
            
             epsilon = sdpvar(size(F,1),N-1);
@@ -146,17 +145,6 @@ classdef MpcControl_x < MpcControlBase
             con = [Sigma*[xs;us]==B_Sigma,
                            F*xs<=f,
                            M*us<= m];
-            diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
-            double(xs)
-            
-            if diagnostics.problem ~= 0
-                % no solution exists: compute reachable set point that is
-                % closest to ref
-                obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
-                con = [xs == mpc.A*xs + mpc.B*us,
-                           F*xs<=f,
-                           M*us<= m];
-            end
             
             
 

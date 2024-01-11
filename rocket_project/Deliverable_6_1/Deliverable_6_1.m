@@ -11,20 +11,12 @@ rocket = Rocket(Ts);
 rocket.delay = 0;
 H = 3; % Horizon length in seconds
 
-%%
-% Trial with constant reference
+%% Trial with constant reference
 nmpc = NmpcControl(rocket, H);
 ref = [0.5, 0, 1, deg2rad(5)]';
 
 x = zeros(12,1);
 
-
-% Open loop trajectory
-[u, T_opt, X_opt, U_opt] = nmpc.get_u(x, ref);
-U_opt(:,end+1) = nan;
-ph = rocket.plotvis(T_opt, X_opt, U_opt, ref);
-
-% Closed loop trajectory
 Tf = 10;
 [T, X, U, Ref] = rocket.simulate(x, Tf, @nmpc.get_u, ref);
 
@@ -33,10 +25,10 @@ rocket.anim_rate = 20; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);
 
 
-%%
+%% Non linear MPC
 
 Tf =30;
-% MPC reference with default maximum roll = 15 deg
+% TVC reference with default maximum roll = 15 deg
 ref = @(t_, x_) ref_TVC(t_);
 [T, X, U, Ref] = rocket.simulate(x, Tf, @nmpc.get_u, ref);
 
@@ -81,7 +73,7 @@ ref = @(t_, x_) ref_TVC(t_, roll_max);
 rocket.anim_rate = 20; % Increase this to make the animation faster
 ph = rocket.plotvis(T, X, U, Ref);
 
-%% Case 50 deg
+%%
 % TVC reference with specified maximum roll = 50 deg
 roll_max = deg2rad(50);
 ref = @(t_, x_) ref_TVC(t_, roll_max);

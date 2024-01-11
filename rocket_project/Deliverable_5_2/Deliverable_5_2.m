@@ -10,7 +10,7 @@ clc
 Ts = 1/20;
 rocket = Rocket(Ts);
 H = 7; % Horizon length in seconds
-Tf = 20;
+Tf = 2;
 %% 
 [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
 sys = rocket.linearize(xs, us); % Linearize the nonlinear model about trim point

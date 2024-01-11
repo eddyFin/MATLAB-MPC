@@ -103,14 +103,14 @@ classdef NmpcControl < handle
             
             cost = 0;
             for k = 1:N-1
-                % Cost function update (assuming cost is defined earlier)
+                % Cost function update
                 
                 cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k)-u_ref)'*R*(U_sym(:,k)-u_ref);
-                %cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k))'*R*(U_sym(:,k));
+                
                 % Equality constraints
                 eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
                 
-                % Inequality constraints
+                
                 
             end
             

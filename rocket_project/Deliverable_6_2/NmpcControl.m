@@ -53,12 +53,9 @@ classdef NmpcControl < handle
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
     
   
-            cost = 0;
            
-
-             Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
-             R = diag([1000 1000 1.5 0.0001]);
-
+            Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
+            R = diag([10000*0.4 100000*0.19 0.1 0.1]);
 
             % input constraints
             M_ona = [1 0 0 0;-1 0 0 0;0 1 0 0; 0 -1 0 0; 0 0 1 0; 0 0 -1 0; 0 0 0 1; 0 0 0 -1];
@@ -104,11 +101,12 @@ classdef NmpcControl < handle
             ineq_constr1 = [];
             ineq_constr2 = [];
             
+            cost = 0;
             for k = 1:N-1
                 % Cost function update (assuming cost is defined earlier)
                 
                 cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k)-u_ref)'*R*(U_sym(:,k)-u_ref);
-
+                %cost = cost + (X_sym(:,k)-x_ref)'*Q*(X_sym(:,k)-x_ref) + (U_sym(:,k))'*R*(U_sym(:,k));
                 % Equality constraints
                 eq_constr = [eq_constr; X_sym(:, k+1) - f_discrete(X_sym(:,k),U_sym(:,k))];
                 
@@ -179,15 +177,16 @@ classdef NmpcControl < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             delay = obj.expected_delay;
-            %mem_u = obj.mem_u;
+            mem_u = obj.mem_u;
             
             % Delay compensation: Predict x0 delay timesteps later.
             % Simulate x_ for 'delay' timesteps
             x_ = x0;
 
             Ts = obj.rocket.Ts;
+
             for k = 1: delay
-                x_ = x_ + Ts*obj.rocket.f(x_, obj.mem_u(:,k));
+                x_ = x_ + Ts*obj.rocket.f(x_, mem_u(:,k));
             end
             
 

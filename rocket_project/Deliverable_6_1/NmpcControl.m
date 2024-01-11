@@ -52,7 +52,8 @@ classdef NmpcControl < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
     
-  
+            Ts = rocket.Ts;
+
             cost = 0;
            
 
@@ -76,7 +77,7 @@ classdef NmpcControl < handle
             lbu = -m_ona(2:2:end);
 
             % discretize f:
-            f_discrete = @(x,u) RK4(x,u,1/20,rocket);
+            f_discrete = @(x,u) RK4(x,u,Ts,rocket);
             
             % Compute the terminal set of the linearized system
             [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)

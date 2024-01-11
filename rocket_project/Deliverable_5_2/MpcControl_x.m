@@ -130,17 +130,7 @@ classdef MpcControl_x < MpcControlBase
             con = [Sigma*[xs;us]==B_Sigma,
                            F*xs<=f,
                            M*us<= m];
-            diagnostics = solvesdp(con,obj,sdpsettings('verbose',0));
             
-            
-            if diagnostics.problem ~= 0
-                % no solution exists: compute reachable set point that is
-                % closest to ref
-                obj = (mpc.C*xs - ref)'*Q_sigma*(mpc.C*xs - ref);
-                con = [xs == mpc.A*xs + mpc.B*us,
-                           F*xs<=f,
-                           M*us<= m]; 
-            end
             
             
 

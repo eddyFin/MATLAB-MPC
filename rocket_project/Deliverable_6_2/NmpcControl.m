@@ -52,10 +52,13 @@ classdef NmpcControl < handle
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
     
-  
+            Ts = rocket.Ts;
            
+
+
             Q = diag([30 30 1  1 1 500 20  20  20  5000 5000 5000]);
-            R = diag([10000*0.4 100000*0.19 0.1 0.1]);
+            R = diag([100000*0.4 100000*0.19 0.1 0.1]);
+
 
             % input constraints
             M_ona = [1 0 0 0;-1 0 0 0;0 1 0 0; 0 -1 0 0; 0 0 1 0; 0 0 -1 0; 0 0 0 1; 0 0 0 -1];
@@ -74,7 +77,7 @@ classdef NmpcControl < handle
             lbu = -m_ona(2:2:end);
 
             % discretize f:
-            f_discrete = @(x,u) RK4(x,u,1/20,rocket);
+            f_discrete = @(x,u) RK4(x,u,Ts,rocket);
             
             % Compute the terminal set of the linearized system
             [xs, us] = rocket.trim(); % Compute steady−state for which 0 = f(xs,us)
@@ -207,7 +210,7 @@ classdef NmpcControl < handle
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             % Delay compensation: Save current u
             if obj.expected_delay > 0
-               obj.mem_u = repmat(u, 1, obj.expected_delay);
+               obj.mem_u = [obj.mem_u(:,2:end), u];
             end
             % YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE YOUR CODE HERE
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -4,20 +4,20 @@ close all
 clear all
 clc
 
-%% TODO: This file should produce all the plots for the deliverable
+%%  This file should produce all the plots for the deliverable
 
 Ts = 1/40; % Higher sampling rate for this part!
 
 rocket = Rocket(Ts);
 ... Define NMPC ...
 H = 1; % Horizon length in seconds
-expected_delay = 2;
+expected_delay = 4;
 nmpc = NmpcControl(rocket, H, expected_delay);
 x0 = zeros(12, 1);
 ref = [0.5, 0, 1, deg2rad(65)]';
 Tf = 2.5;
 rocket.mass = 1.75;
-rocket.delay = 3; % 0 if not specified
+rocket.delay = 6; % 0 if not specified
 [T, X, U, Ref] = rocket.simulate(x0, Tf, @nmpc.get_u, ref);
 % Visualize
 rocket.anim_rate = 20; % Increase this to make the animation faster
